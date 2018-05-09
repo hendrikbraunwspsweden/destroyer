@@ -51,16 +51,21 @@ class Destroyer(object):
         self.__reload_time = None
         self.__last_shot = None
         self.__window_size = window_size
-        print(self.__window_size)
 
         if type == 0:
             self.__image_size = (282,35)
+            self.__tower_size = (24,24)
+            self.__pipe_length = 40
             self.__rect = pygame.Rect(self.__window_size[0]/2 - self.__image_size[0]/2,
                 self.__window_size[1]/2 - self.__image_size[1]/2,
                 self.__image_size[0], self.__image_size[1])
             self.__image = pygame.image.load("./media/warship.png")
 
-            self.__tower_rect = pygame.Rect(self.__window_size[0]/2 - 5, self.__window_size[1]/2 - 5, 10, 10)
+            self.__tower_rect = pygame.Rect(self.__window_size[0]/2 - self.__tower_size[0]/2,
+                                            self.__window_size[1]/2 - self.__tower_size[1]/2,
+                                            self.__tower_size[0], self.__tower_size[1])
+            self.__tower_image = pygame.image.load("./media/tower1.png")
+            self.__pipe = (self.__window_size[0]/2, self.__window_size[1]/2 - 10)
 
         self.__reload_time = reload_time
 
@@ -75,6 +80,9 @@ class Destroyer(object):
                 self.__tower_direction = self.__tower_direction + 360
             self.__tower_direction -= steps
 
+        self.__pipe = project_point(self.__window_size[0]/2, self.__window_size[1]/2,
+                                    self.__tower_direction, self.__pipe_length)
+
     def set_reload_time(self, time):
         self.__reload_time = time
 
@@ -83,6 +91,12 @@ class Destroyer(object):
 
     def get_image(self):
         return self.__image, self.__rect
+
+    def get_tower(self):
+        return self.__tower_image, self.__tower_rect
+
+    def get_pipe(self):
+        return self.__pipe
 
     def shoot(self):
         if self.__last_shot is None:
@@ -102,17 +116,42 @@ class Destroyer(object):
 
 class Enemy(object):
 
-    def __init(self, type, strength):
-        self.__type = None
-        self.__strength = None
-        self.__position = None
+    def __init__(self, type, strength, speed, origin, direction):
+        self.__type = type
+        self.__strength = strength
+        self.__position = origin
         self.__direction = 0
+        self.__speed = speed
+        self.__direction = direction
+
+        if type == 0:
+            self.__image = pygame.image.load("./media/submarine.png")
+        self.__image_size = self.__image.get_rect()[2], self.__image.get_rect()[3]
+        self.__rect = pygame.Rect(self.__position[0] + self.__image_size[0], self.__position[1]-self.__image_size[1]/2,
+                                  self.__image_size[0], self.__image_size[1])
 
     def get_position(self):
         return 0
 
-    def move(self, direction, speed):
+    def move(self):
         pass
+
+    def get_image(self):
+        return self.__image, self.__rect
+
+class Enemies():
+    def __init__(self):
+        self.__enemy_list = []
+
+    def add_enemy(self, type, strength, speed, origin, direction):
+        self.__enemy_list.append(Enemy(type, strength, speed, origin, direction))
+
+    def get_enemies(self):
+        return self.__enemy_list
+
+    def remove_enemies(self, index):
+        self.__enemy_list.pop(index[0])
+
 
 class Bullet(object):
 
@@ -125,23 +164,26 @@ class Bullet(object):
         self.__px_per_second = px_per_second
         self.__original_time = datetime.datetime.now()
         self.__image = None
-        self.__image_size = (6,23)
-        self.__rect = pygame.Rect(self.__position[0]-self.__image_size[0]/2, self.__position[1] - self.__image_size[1]/2, 20, 30)
 
         if type == 0:
             self.__image = pygame.image.load("./media/bullet1.png")
-            loc = self.__image.get_rect().center
-            self.__image = pygame.transform.rotate(self.__image, -self.__direction)
-            self.__image.get_rect().center = loc
+
+        self.__image = pygame.transform.rotate(self.__image, - self.__direction)
+        self.__image_size = self.__image.get_rect()[2], self.__image.get_rect()[3]
+
+        self.__rect = pygame.Rect(self.__position[0]-self.__image_size[0]/2, self.__position[1] - self.__image_size[1]/2,
+                                  self.__image_size[0], self.__image_size[1])
 
     def move(self):
         new_time = datetime.datetime.now()
         time_delta = new_time - self.__old_time
         self.__old_time = new_time
         vector_delta = math.floor(time_delta.total_seconds() * self.__px_per_second)
+
         self.__position = project_point(self.__position[0], self.__position[1], self.__direction, vector_delta)
-        self.__rect.x = self.__position[0] - self.__image_size[0]/2
-        self.__rect.y = self.__position[1] - self.__image_size[1]/2
+
+        self.__rect = pygame.Rect(self.__position[0]-self.__image_size[0]/2, self.__position[1] - self.__image_size[1]/2,
+                              self.__image_size[0], self.__image_size[1])
 
     def get_position(self):
         return [int(math.floor(self.__position[0])), int(math.floor(self.__position[1]))]
@@ -195,7 +237,21 @@ class Destroyer_logic(object):
             if not (self.__window_size[0] >= bullet_list[i].get_position()[0] >= 0) or not (self.__window_size[1] >= bullet_list[i].get_position()[1] >= 0):
                 bullet_remove_list.append(i)
 
-        self.__bullets.remove_bullets(bullet_remove_list)
+
+        enemy_remove_list = []
+        enemy_list = self.__enemies.get_enemies()
+
+        for b in range(len(bullet_list)):
+            for e in range(len(enemy_list)):
+                if bullet_list[b].get_image()[1].colliderect(enemy_list[e].get_image()[1]):
+                    bullet_remove_list.append(b)
+                    enemy_remove_list.append(e)
+
+        if len(bullet_remove_list)> 0:
+            self.__bullets.remove_bullets(bullet_remove_list)
+        if len(enemy_remove_list)>0:
+            self.__enemies.remove_enemies(enemy_remove_list)
+
 
 class Destroyer_gfx(object):
 
@@ -216,9 +272,20 @@ class Destroyer_gfx(object):
 
     def draw(self):
         self.__screen.blit(self.__background, self.__background_rect)
-        self.__screen.blit(self.__destroyer.get_image()[0], self.__destroyer.get_image()[1])
+
         for b in self.__bullets.get_bullets():
             self.__screen.blit(b.get_image()[0], b.get_image()[1])
+
+        self.__screen.blit(self.__destroyer.get_image()[0], self.__destroyer.get_image()[1])
+
+        self.__screen.blit(self.__destroyer.get_tower()[0], self.__destroyer.get_tower()[1])
+
+        pygame.draw.line(self.__screen, (0,0,0), (self.__window_size[0]/2, self.__window_size[1]/2),
+                         (self.__destroyer.get_pipe()), 8)
+
+        for e in self.__enemies.get_enemies():
+            self.__screen.blit(e.get_image()[0], e.get_image()[1])
+
         pygame.display.flip()
 
 
@@ -235,17 +302,33 @@ class Destroyer_game(object):
         self.__window_size = window_size
 
         pygame.init()
-        destroyer = Destroyer(0,100, window_size)
+        destroyer = Destroyer(0,500, window_size)
         bullets = Bullets((window_size[0]/2, window_size[1]/2), window_size)
-        logic = Destroyer_logic(destroyer, None, bullets, window_size)
-        graphics = Destroyer_gfx(window_size, destroyer, None, bullets, "./media/background.png")
-
+        enemies = Enemies()
+        enemies.add_enemy(0, 100,100, (600,200), 3)
+        logic = Destroyer_logic(destroyer, enemies, bullets, window_size)
+        graphics = Destroyer_gfx(window_size, destroyer, enemies, bullets, "./media/background.png")
+        graphics.draw()
         exit_game = False
 
         while not exit_game:
 
             bullets.move()
             logic.check()
+
+            keys = pygame.key.get_pressed()
+            if keys[pygame.K_UP]:
+                print("UP!")
+
+            if keys[pygame.K_RIGHT]:
+                destroyer.turn_tower(1,1)
+
+            if keys[pygame.K_LEFT]:
+                destroyer.turn_tower(3,1)
+
+            if keys[pygame.K_SPACE]:
+                if destroyer.shoot():
+                    bullets.add_bullet(0,100, destroyer.get_direction(), 500)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT: sys.exit()
@@ -256,15 +339,6 @@ class Destroyer_game(object):
                     if key == "escape":
                         exit_game = True
 
-                    if key == "right":
-                        destroyer.turn_tower(1,4)
-
-                    if key == "left":
-                        destroyer.turn_tower(3,4)
-
-                    if key == "space":
-                        if destroyer.shoot():
-                            bullets.add_bullet(0,100, destroyer.get_direction(), 2000)
 
             graphics.draw()
             sleep(0.005)
