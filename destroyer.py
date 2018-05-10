@@ -44,6 +44,15 @@ def project_point(original_x, original_y, bearing, distance):
         return [original_x - move_x, original_y - move_y]
 
 
+def blit_alpha(target, source, location, opacity):
+    x = location[0]
+    y = location[1]
+    temp = pygame.Surface((source.get_width(), source.get_height())).convert()
+    temp.blit(target, (-x, -y))
+    temp.blit(source, (0, 0))
+    temp.set_alpha(opacity)
+    target.blit(temp, location)
+
 class Destroyer(object):
 
     def __init__(self, type, reload_time, window_size):
@@ -119,80 +128,153 @@ class Destroyer(object):
 
 class Enemy(object):
 
-    def __init__(self, enemy_type, strength, px_per_second, origin, direction):
-        self.__strength = strength
-        self.__position = origin
-        self.__direction = direction
-        self.__px_per_second = px_per_second
-        self.__direction = direction
-        self.__old_time = datetime.datetime.now()
-        self.__image = None
-        self.__image_size = None
-
-        if enemy_type == 0:
-            self.__image = pygame.image.load("./media/submarine.png")
-            if self.__direction == 1:
-                self.__image = pygame.transform.rotate(self.__image, 180)
-
-        self.__image_size = self.__image.get_rect()[2], self.__image.get_rect()[3]
-
-        self.__rect = pygame.Rect(self.__position[0], self.__position[1]-self.__image_size[1]/2,
-                                  self.__image_size[0], self.__image_size[1])
+    def __init__(self, strength, px_per_second, origin, direction):
+        self._strength = strength
+        self._position = origin
+        self._direction = direction
+        self._px_per_second = px_per_second
+        self._direction = direction
+        self._old_time = datetime.datetime.now()
+        self._image = None
+        self._image_size = None
+        self._param_dict = {}
 
     def get_rect(self):
-        rect = self.__position[0], self.__position[1], self.__position[0] + self.__rect[2], self.__position[1] + \
-               self.__rect[3]
-
+        rect = self._position[0], self._position[1], self._position[0] + self._rect[2], self._position[1] + \
+               self._rect[3]
         return rect
 
     def get_direction(self):
-        return self.__direction
+        return self._direction
 
     def get_position(self):
-        return self.__position
+        return self._position
 
     def move(self):
         new_time = datetime.datetime.now()
-        time_delta = new_time - self.__old_time
-        self.__old_time = new_time
-        vector_delta = math.floor(time_delta.total_seconds() * self.__px_per_second)
+        time_delta = new_time - self._old_time
+        self._old_time = new_time
+        vector_delta = math.floor(time_delta.total_seconds() * self._px_per_second)
 
-        if self.__direction == 3:
-            self.__position = self.__position[0] - vector_delta, self.__position[1]
-            self.__rect = pygame.Rect(self.__position[0]-vector_delta, self.__position[1] - self.__image_size[1]/2,
-                                      self.__image_size[0], self.__image_size[1])
+        if self._direction == 3:
+            self._position = self._position[0] - vector_delta, self._position[1]
+            self._rect = pygame.Rect(self._position[0]-vector_delta, self._position[1] - self._image_size[1]/2,
+                                      self._image_size[0], self._image_size[1])
 
-        if self.__direction == 1:
-            self.__position = self.__position[0] + vector_delta, self.__position[1]
-            self.__rect = pygame.Rect(self.__position[0]-vector_delta, self.__position[1] - self.__image_size[1]/2,
-                                      self.__image_size[0], self.__image_size[1])
+        if self._direction == 1:
+            self._position = self._position[0] + vector_delta, self._position[1]
+            self._rect = pygame.Rect(self._position[0]-vector_delta, self._position[1] - self._image_size[1]/2,
+                                      self._image_size[0], self._image_size[1])
 
     def get_image(self):
-        return self.__image, self.__rect
+        return self._image, self._rect
+
+    def get_ship_params(self):
+        return self._param_dict
+
+    def set_ship_param(self, param, value):
+        try:
+            self._param_dict[param] = value
+        except:
+            return 1
+
+class Submarine(Enemy):
+    def __init__(self, strength, px_per_second, origin, direction):
+
+        Enemy.__init__(self, strength, px_per_second, origin, direction)
+
+        #Setting image related parameters
+        self._image = pygame.image.load("./media/submarine.png")
+        if self._direction == 1:
+            self._image = pygame.transform.rotate(self._image, 180)
+        self._image_size = self._image.get_rect()[2], self._image.get_rect()[3]
+        self._rect = pygame.Rect(self._position[0], self._position[1]-self._image_size[1]/2,
+                                  self._image_size[0], self._image_size[1])
+
+    @classmethod
+    def get_params(cls):
+        return {
+            "strength":100,
+            "min_speed":60,
+            "max_speed":80,
+            "torpedo_type":0,
+            "points":100
+        }
+
+class Torpedoboat(Enemy):
+    def __init__(self, strength, px_per_second, origin, direction):
+
+        Enemy.__init__(self, strength, px_per_second, origin, direction)
+
+        #Setting image related parameters
+        self._image = pygame.image.load("./media/torpedoboat.png")
+        if self._direction == 1:
+            self._image = pygame.transform.rotate(self._image, 180)
+        self._image_size = self._image.get_rect()[2], self._image.get_rect()[3]
+        self._rect = pygame.Rect(self._position[0], self._position[1]-self._image_size[1]/2,
+                                 self._image_size[0], self._image_size[1])
+
+    @classmethod
+    def get_params(cls):
+        return {
+            "strength":100,
+            "min_speed":150,
+            "max_speed":200,
+            "torpedo_type":0,
+            "points":100
+        }
 
 class Enemies():
-    def __init__(self, wait_time_range, speed_range, max_enemies, window_size):
+
+    def __init__(self, wait_time_range, max_enemies, window_size, ship_ratios=[(1,20),(20,100)]):
+        ################################################################################################################
+        # Ship_ratios is specified of number ranges between 1 and 100 for the different ship types. If ship type 1 is  #
+        # to have a 70% chance of appearing and it is first in the list, then the range should be defined as (1,70)    #
+        # and if ship type 2 then is supposed to have a 30% chance of appearing, the range has to be specified as      #
+        # (71,100). The ship type class that will be initiated based on the randomized number is defined in add_enemy  #
+        ################################################################################################################
+
         self.__enemy_list = []
         self.__wait_time_range = wait_time_range
         self.__max_enemies = max_enemies
         self.__old_time = datetime.datetime.now()
         self.__next_enemy_in = 0
         self.__window_size = window_size
-        self.__speed_range = speed_range
+        self.__ship_ratios = ship_ratios
+
 
     def add_enemy(self):
 
         def check_y_position(y):
+            #Method to check if any other enemy is on the same position or within a frame of 80 pixels
+
             for e in self.get_enemies():
                 if e.get_rect()[1] - 40 < y < e.get_rect()[3] + 40:
                     return True
             return False
 
-        def randomize():
-            type = 0
-            strength = 100
+        def make_ship():
+            ############################################################################################################
+            # Function to randomize a ship and its params based on the ratios specified in __ship_ratios.              #
+            ############################################################################################################
 
-            speed = randrange(self.__speed_range[0], self.__speed_range[1], 1)
+            ship_type = randrange(1,100,1)
+            print(ship_type)
+            ship_type_count = len(self.__ship_ratios)
+            for i in range(ship_type_count):
+                if ship_type in range(self.__ship_ratios[i][0], self.__ship_ratios[i][1]):
+                    ship_type = i
+                    break
+
+
+            #Define ship types
+            if ship_type == 0:
+                param_dict = Submarine.get_params()
+            elif ship_type == 1:
+                param_dict = Torpedoboat.get_params()
+
+            strength = param_dict["strength"]
+            speed = randrange(param_dict["min_speed"], param_dict["max_speed"], 1)
 
             good_y = False
 
@@ -212,22 +294,26 @@ class Enemies():
             if direction == 3:
                 origin = self.__window_size[0], y
 
-            return type, strength, speed, y, direction, origin
+            #Assign classes to the ship types
+            if ship_type == 0:
+                ship = Submarine(strength, speed, origin, direction)
+            elif ship_type == 1 :
+                ship = Torpedoboat(strength, speed, origin, direction)
+
+            return ship
+
 
         if len(self.__enemy_list) == 0:
-            type, strength, speed, y, direction, origin = randomize()
-            self.__enemy_list.append(Enemy(0, strength, speed, origin, direction))
+            self.__enemy_list.append(make_ship())
             self.__next_enemy_in = randrange(self.__wait_time_range[0], self.__wait_time_range[1], 1)
             self.__old_time = datetime.datetime.now()
         else:
             if len(self.get_enemies()) < self.__max_enemies:
                 new_time = datetime.datetime.now()
                 if (new_time - self.__old_time).total_seconds() > self.__next_enemy_in:
-                    type, strength, speed, y, direction, origin = randomize()
-                    self.__enemy_list.append(Enemy(0,strength, speed, origin, direction))
+                    self.__enemy_list.append(make_ship())
                     self.__next_enemy_in = randrange(self.__wait_time_range[0], self.__wait_time_range[1], 1)
                     self.__old_time = new_time
-
 
     def move(self):
         for e in self.__enemy_list:
@@ -320,10 +406,11 @@ class Bullets(object):
 
 class Destroyer_logic(object):
 
-    def __init__(self, destroyer, enemies, bullets, window_size):
+    def __init__(self, destroyer, enemies, bullets, fades, window_size):
         self.__destroyer = destroyer
         self.__bullets = bullets
         self.__enemies = enemies
+        self.__fades = fades
         self.__window_size = window_size
 
     def __check_bullets(self):
@@ -346,6 +433,7 @@ class Destroyer_logic(object):
                 if bullet_list[b].get_image()[1].colliderect(enemy_list[e].get_image()[1]):
                     bullet_remove_list.append(b)
                     enemy_remove_list.append(e)
+                    self.__fades.add_fade(enemy_list[e].get_image()[0], enemy_list[e].get_image()[1], 0.5)
         return bullet_remove_list, enemy_remove_list
 
     def __check_enemies(self):
@@ -377,16 +465,62 @@ class Destroyer_logic(object):
             self.__enemies.add_enemy()
 
 
+class Fade_fx(object):
+    def __init__(self, image, rect, time):
+        self._image = image
+        self._rect = rect
+        self._time = time
+        self._steps = 255/self._time
+        self._old_time = datetime.datetime.now()
+        self._total_time = 0
+        self._alpha = 255
+
+    def fade(self):
+        if self._alpha < 0:
+            return -1
+        else:
+            new_time = datetime.datetime.now()
+            self._total_time += (new_time - self._old_time).total_seconds()
+            self._alpha = 255 - self._steps * self._total_time
+        self._old_time = new_time
+        return 0
+
+    def get_image(self):
+        return self._image, self._rect
+
+    def get_alpha(self):
+        return self._alpha
+
+
+class Fades(object):
+    def __init__(self):
+        self.__fade_list = []
+
+    def add_fade(self, image, rect, time):
+        self.__fade_list.append(Fade_fx(image, rect, time))
+
+    def fade(self):
+        new_fades = []
+        for i in range(len(self.__fade_list)):
+            if not self.__fade_list[i].fade() == -1:
+                new_fades.append(self.__fade_list[i])
+        self.__fade_list = new_fades
+
+    def get_fades(self):
+        return self.__fade_list
+
 class Destroyer_gfx(object):
 
-    def __init__(self, window_size, destroyer, enemies, bullets, bg_image):
+    def __init__(self, window_size, destroyer, enemies, bullets, fades, bg_image):
         self.__destroyer = destroyer
         self.__enemies = enemies
         self.__bullets = bullets
+        self.__fades = fades
         self.__screen = pygame.display.set_mode(window_size)
         self.__background_path = bg_image
         self.__window_size = window_size
         self.make_background()
+        self.__explosions = []
 
     def make_background(self):
         self.__background = pygame.image.load(self.__background_path)
@@ -402,6 +536,9 @@ class Destroyer_gfx(object):
         for b in self.__bullets.get_bullets():
             self.__screen.blit(b.get_image()[0], b.get_image()[1])
 
+        for f in self.__fades.get_fades():
+            blit_alpha(self.__screen, f.get_image()[0], f.get_image()[1], f.get_alpha())
+
         self.__screen.blit(self.__destroyer.get_tower()[0], self.__destroyer.get_tower()[1])
 
         pygame.draw.line(self.__screen, (102,102,102), (self.__window_size[0]/2, self.__window_size[1]/2),
@@ -415,7 +552,7 @@ class Destroyer_gfx(object):
 
 class Destroyer_game(object):
 
-    def __init__(self, window_size=(1024,800), game_speed=1, max_enemies=10, enemy_wait_range=(1, 2), speed_range=(120,180)):
+    def __init__(self, window_size=(1024,800), game_speed=1, max_enemies=20, enemy_wait_range=(1, 2)):
         self.__window_size = window_size
         self.__game_speed = game_speed
         self.__max_enemies = max_enemies
@@ -428,11 +565,13 @@ class Destroyer_game(object):
         pygame.init()
         destroyer = Destroyer(0,500, window_size)
         bullets = Bullets((window_size[0]/2, window_size[1]/2), window_size)
-        enemies = Enemies(enemy_wait_range, speed_range, max_enemies, window_size)
+        enemies = Enemies(enemy_wait_range, max_enemies, window_size)
+        fades = Fades()
         enemies.add_enemy()
-        logic = Destroyer_logic(destroyer, enemies, bullets, window_size)
-        graphics = Destroyer_gfx(window_size, destroyer, enemies, bullets, "./media/background.png")
+        logic = Destroyer_logic(destroyer, enemies, bullets, fades, window_size)
+        graphics = Destroyer_gfx(window_size, destroyer, enemies, bullets, fades, "./media/background.png")
         graphics.draw()
+
         exit_game = False
 
         while not exit_game:
@@ -441,6 +580,7 @@ class Destroyer_game(object):
             enemies.move()
             bullets.move()
             logic.check()
+            fades.fade()
 
             keys = pygame.key.get_pressed()
 
