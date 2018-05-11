@@ -128,8 +128,9 @@ class Enemy(object):
         self._old_time = datetime.datetime.now()
         self._image = None
         self._image_size = None
-        self._param_dict = {}
         self._rect = None
+        self._param_dict = {}
+        self._has_torpedo = None
 
     def get_rect(self):
         rect = self._position[0], self._position[1], self._position[0] + self._rect[2], self._position[1] + \
@@ -148,21 +149,41 @@ class Enemy(object):
         self._old_time = new_time
         vector_delta = floor(time_delta.total_seconds() * self._px_per_second)
 
-        if self._direction == 3:
-            self._position = self._position[0] - vector_delta, self._position[1]
-            self._rect = pygame.Rect(self._position[0]-vector_delta, self._position[1] - self._image_size[1]/2,
+        if self._direction == 0:
+            self._position = self._position[0], self._position[1] - vector_delta
+            self._rect = pygame.Rect(self._position[0] - self._image_size[0]/2, self._position[1],
                                      self._image_size[0], self._image_size[1])
 
         if self._direction == 1:
             self._position = self._position[0] + vector_delta, self._position[1]
-            self._rect = pygame.Rect(self._position[0]-vector_delta, self._position[1] - self._image_size[1]/2,
+            self._rect = pygame.Rect(self._position[0], self._position[1] - self._image_size[1]/2,
+                                     self._image_size[0], self._image_size[1])
+
+        if self._direction == 2:
+            self._position = self._position[0], self._position[1] + vector_delta
+            self._rect = pygame.Rect(self._position[0] - self._image_size[0]/2, self._position[1],
+                                     self._image_size[0], self._image_size[1])
+
+        if self._direction == 3:
+            self._position = self._position[0] - vector_delta, self._position[1]
+            self._rect = pygame.Rect(self._position[0], self._position[1] - self._image_size[1]/2,
                                      self._image_size[0], self._image_size[1])
 
     def get_image(self):
         return self._image, self._rect
 
-    def get_ship_params(self):
-        return self._param_dict
+    def has_torpedo(self):
+            if self._param_dict["has_torpedo"]:
+                if self._has_torpedo is None:
+                    chance = self._param_dict["torpedo_chance"]
+                    rand = randrange(0,10,1)
+                    if rand <= chance*10:
+                        return True
+                    else:
+                        return False
+            else:
+                return False
+
 
     def set_ship_param(self, param, value):
         try:
@@ -172,9 +193,23 @@ class Enemy(object):
 
 
 class Submarine(Enemy):
+
+    param_dict = {
+        "strength":100,
+        "min_speed":60,
+        "max_speed":80,
+        "has_torpedo":False,
+        "torpedo_type":0,
+        "torpedo_speed":0,
+        "torpedo_chance":0,
+        "points":100
+    }
+
     def __init__(self, strength, px_per_second, origin, direction):
 
         Enemy.__init__(self, strength, px_per_second, origin, direction)
+
+        self._param_dict = self.param_dict
 
         #Setting image related parameters
         self._image = pygame.image.load("./media/submarine.png")
@@ -186,21 +221,25 @@ class Submarine(Enemy):
 
     @classmethod
     def get_params(cls):
-        return {
-            "strength":100,
-            "min_speed":60,
-            "max_speed":80,
-            "has_torpedo":False,
-            "torpedo_type":0,
-            "torpedo_speed":0,
-            "torpedo_chance":0,
-            "points":100
-        }
+        return cls.param_dict
 
 class Torpedoboat(Enemy):
+
+    param_dict = {
+        "strength":100,
+        "min_speed":150,
+        "max_speed":200,
+        "has_torpedo":True,
+        "torpedo_type":0,
+        "torpedo_speed":0,
+        "torpedo_chance":0.2,
+        "points":100
+    }
+
     def __init__(self, strength, px_per_second, origin, direction):
 
         Enemy.__init__(self, strength, px_per_second, origin, direction)
+        self._param_dict = self.param_dict
 
         #Setting image related parameters
         self._image = pygame.image.load("./media/torpedoboat.png")
@@ -212,18 +251,46 @@ class Torpedoboat(Enemy):
 
     @classmethod
     def get_params(cls):
-        return {
-            "strength":100,
-            "min_speed":150,
-            "max_speed":200,
-            "has_torpedo":True,
-            "torpedo_type":0,
-            "torpedo_speed":0,
-            "torpedo_chance":0.6,
-            "points":100
-        }
+        return cls.param_dict
 
 
+class Torpedo(Enemy):
+
+    param_dict = {
+        "strength":100,
+        "min_speed":50,
+        "max_speed":51,
+        "has_torpedo":False,
+        "torpedo_type":0,
+        "torpedo_speed":0,
+        "torpedo_chance":0,
+        "points":100
+    }
+
+    def __init__(self, strength, px_per_second, origin, direction):
+
+        Enemy.__init__(self, strength, px_per_second, origin, direction)
+
+        #Handling over the parameter dict to the parent class
+        self._param_dict = self.param_dict
+
+        #Setting image related parameters
+        self._image = pygame.image.load("./media/torpedoboat.png")
+        if self._direction == 1:
+            self._image = pygame.transform.rotate(self._image, 180)
+        self._image_size = self._image.get_rect()[2], self._image.get_rect()[3]
+        self._rect = pygame.Rect(self._position[0], self._position[1]-self._image_size[1]/2,
+                                 self._image_size[0], self._image_size[1])
+
+    @classmethod
+    def get_params(cls):
+        return cls._param_dict
+
+    def set_ship_param(self, param, value):
+        try:
+            self._param_dict[param] = value
+        except:
+            return 1
 
 
 class Enemies():
@@ -233,7 +300,7 @@ class Enemies():
         # Ship_ratios is specified of number ranges between 1 and 100 for the different ship types. If ship type 1 is  #
         # to have a 70% chance of appearing and it is first in the list, then the range should be defined as (1,70)    #
         # and if ship type 2 then is supposed to have a 30% chance of appearing, the range has to be specified as      #
-        # (71,100). The ship type class that will be initiated based on the randomized number is defined in add_enemy  #
+        # (70,100). The ship type class that will be initiated based on the randomized number is defined in add_enemy  #
         ################################################################################################################
 
         self.__enemy_list = []
@@ -312,6 +379,7 @@ class Enemies():
                 new_time = datetime.datetime.now()
                 if (new_time - self.__old_time).total_seconds() > self.__next_enemy_in:
                     self.__enemy_list.append(make_ship())
+                    print(self.__enemy_list[-1].has_torpedo())
                     self.__next_enemy_in = randrange(self.__wait_time_range[0], self.__wait_time_range[1], 1)
                     self.__old_time = new_time
 

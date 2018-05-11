@@ -7,7 +7,7 @@ from time import sleep
 
 class Destroyer_game(object):
 
-    def __init__(self, window_size=(1024,800), game_speed=1, max_enemies=10, enemy_wait_range=(1, 2)):
+    def __init__(self, window_size=(1024,800), game_speed=1, max_enemies=3, enemy_wait_range=(2, 4)):
         self.__window_size = window_size
         self.__game_speed = game_speed
         self.__max_enemies = max_enemies

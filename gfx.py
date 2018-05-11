@@ -93,5 +93,5 @@ class Destroyer_gfx(object):
         for e in self.__enemies.get_enemies():
             self.__screen.blit(e.get_image()[0], e.get_image()[1])
 
-        pygame.display.flip()
+        pygame.display.update()
 
