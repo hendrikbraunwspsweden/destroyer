@@ -3,6 +3,7 @@ import sys
 from units import *
 from gfx import *
 from logic import *
+from unit_handling import *
 from time import sleep
 
 class Destroyer_game(object):
@@ -64,7 +65,7 @@ class Destroyer_game(object):
 
 
             graphics.draw()
-            sleep(0.005)
+            #sleep(0.005)
             #screen.fill(black)
             #screen.blit(ball, ballrect)
             #pygame.display.flip()

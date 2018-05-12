@@ -88,14 +88,14 @@ class Destroyer_gfx(object):
 
         self.__screen.blit(self.__destroyer.get_tower()[0], self.__destroyer.get_tower()[1])
 
-        pygame.draw.line(self.__screen, (102,102,102), (self.__window_size[0]/2, self.__window_size[1]/2),
-                         (self.__destroyer.get_pipe()), 8)
-
         for t in self.__torpedos.get_torpedos():
             self.__screen.blit(t.get_image()[0], t.get_image()[1])
 
         for e in self.__enemies.get_enemies():
             self.__screen.blit(e.get_image()[0], e.get_image()[1])
+
+        pygame.draw.line(self.__screen, (102,102,102), (self.__window_size[0]/2, self.__window_size[1]/2),
+                         (self.__destroyer.get_pipe()), 8)
 
         pygame.display.update()
 

@@ -132,21 +132,23 @@ class Enemy(object):
     ####################################################################################################################
     # Base class for enemy objects. That can be ships as well as for example torpedos. The parameter dict _param_dict  #
     # defines the general outline of how the attributes for each sub class are defined:                                #
-    # "strength" (int)      : enemy strength points                                                                    #
-    # "min_speed" (int)     : minimum unit speed in px/sec                                                             #
-    # "max_speed" (int)     : maximum unit speed int px/sec                                                            #
-    # "min_dist" (int)      : minumum distance from the unit to the destroyer's horizontal center line in px           #
-    # "has_torpedo" (bool)  : defines if the unit shoots torpedos                                                      #
-    # "torpedo_type(int)    : torpedo type                                                                             #
-    # "torpedo_speed(int)   : torpedo speed in px/sec                                                                  #
-    # "torpedo_chance(float): chance of shooting torpedo, between 0.0 and 1.0                                          #
-    # "points (int)         : points awarded to player when enemy is shot                                              #
+    # "strength" (int)                  : enemy strength points                                                        #
+    # "min_speed" (int)                 : minimum unit speed in px/sec                                                 #
+    # "max_speed" (int)                 : maximum unit speed int px/sec                                                #
+    # "game_speed_multiplier" (float)   : speed vector multiplication value. 0.1 means 10% faster per game level       #
+    # "min_dist" (int)                  : minumum distance from the unit to the destroyer's horizontal center line     #
+    # "has_torpedo" (bool)              : defines if the unit shoots torpedos                                          #
+    # "torpedo_type(int)                : torpedo type                                                                 #
+    # "torpedo_speed(int)               :torpedo speed in px/sec                                                       #
+    # "torpedo_chance(float)            : chance of shooting torpedo, between 0.0 and 1.0                              #
+    # "points (int)                     : points awarded to player when enemy is shot                                  #
     ####################################################################################################################
 
     _param_dict = {
         "hp":None,
         "min_speed":None,
         "max_speed": None,
+        "game_speed_multiplier":None,
         "min_dist":None,
         "has_torpedo":None,
         "torpedo_type":None,
@@ -158,6 +160,7 @@ class Enemy(object):
     def __init__(self, hp, px_per_second, origin, direction):
         self._hp = hp
         self._position = origin
+        self._real_position = origin
         self._direction = direction
         self._px_per_second = px_per_second
         self._direction = direction
@@ -182,33 +185,34 @@ class Enemy(object):
     def get_center_point(self):
         return self._position[0] + self._image_size[0]/2, self._position[1] + self._image_size[1]/2
 
-    def move(self):
+    def move(self, level=1):
         new_time = datetime.datetime.now()
         time_delta = new_time - self._old_time
         self._old_time = new_time
-        vector_delta = floor(time_delta.total_seconds() * self._px_per_second)
-        if vector_delta == 0:
-            vector_delta = 1
+        vector_delta = time_delta.total_seconds() * (self._px_per_second + self._param_dict["game_speed_multiplier"] *
+            level)
 
         if self._direction == 0:
-            self._position = self._position[0], self._position[1] - vector_delta
-            self._rect = pygame.Rect(self._position[0] - self._image_size[0]/2, self._position[1],
+            self._real_position = self._real_position[0], self._real_position[1] - vector_delta
+            self._rect = pygame.Rect(self._real_position[0] - self._image_size[0]/2, self._real_position[1],
                                      self._image_size[0], self._image_size[1])
 
         if self._direction == 1:
-            self._position = self._position[0] + vector_delta, self._position[1]
-            self._rect = pygame.Rect(self._position[0], self._position[1] - self._image_size[1]/2,
+            self._real_position = self._real_position[0] + vector_delta, self._real_position[1]
+            self._rect = pygame.Rect(self._real_position[0], self._real_position[1] - self._image_size[1]/2,
                                      self._image_size[0], self._image_size[1])
 
         if self._direction == 2:
-            self._position = self._position[0], self._position[1] + vector_delta
-            self._rect = pygame.Rect(self._position[0] - self._image_size[0]/2, self._position[1],
+            self._real_position = self._real_position[0], self._real_position[1] + vector_delta
+            self._rect = pygame.Rect(self._real_position[0] - self._image_size[0]/2, self._real_position[1],
                                      self._image_size[0], self._image_size[1])
 
         if self._direction == 3:
-            self._position = self._position[0] - vector_delta, self._position[1]
-            self._rect = pygame.Rect(self._position[0], self._position[1] - self._image_size[1]/2,
+            self._real_position = self._real_position[0] - vector_delta, self._real_position[1]
+            self._rect = pygame.Rect(self._real_position[0], self._real_position[1] - self._image_size[1]/2,
                                      self._image_size[0], self._image_size[1])
+
+        self._position = int(round(self._real_position[0],0)), int(round(self._real_position[1],0))
 
     def get_image(self):
         return self._image, self._rect
@@ -266,6 +270,7 @@ class Submarine(Enemy):
         "hp":200,
         "min_speed":60,
         "max_speed":80,
+        "game_speed_multiplier":1,
         "min_dist":100,
         "has_torpedo":True,
         "torpedo_type":1,
@@ -300,6 +305,7 @@ class Torpedoboat(Enemy):
         "hp":100,
         "min_speed":150,
         "max_speed":200,
+        "game_speed_multiplier":None,
         "min_dist":100,
         "has_torpedo":True,
         "torpedo_type":0,
@@ -334,6 +340,7 @@ class Torpedo_0(Enemy):
         "hp":100,
         "min_speed":60,
         "max_speed":60,
+        "game_speed_multiplier":1,
         "min_dist":100,
         "has_torpedo":False,
         "torpedo_type":0,
@@ -364,6 +371,7 @@ class Torpedo_0(Enemy):
 
     def get_damage(self):
         return self._param_dict["damage"]
+
 
 class Torpedo_1(Enemy):
 
@@ -401,170 +409,6 @@ class Torpedo_1(Enemy):
 
     def get_damage(self):
         return self._param_dict["damage"]
-
-class Enemies():
-
-    def __init__(self, wait_time_range, max_enemies, torpedos, window_size, ship_ratios=[(1,20),(20,100)]):
-        ################################################################################################################
-        # Ship_ratios is specified of number ranges between 1 and 100 for the different ship types. If ship type 1 is  #
-        # to have a 70% chance of appearing and it is first in the list, then the range should be defined as (1,70)    #
-        # and if ship type 2 then is supposed to have a 30% chance of appearing, the range has to be specified as      #
-        # (70,100). The ship type class that will be initiated based on the randomized number is defined in add_enemy  #
-        ################################################################################################################
-
-        self.__enemy_list = []
-        self.__wait_time_range = wait_time_range
-        self.__max_enemies = max_enemies
-        self.__old_time = datetime.datetime.now()
-        self.__next_enemy_in = 0
-        self.__window_size = window_size
-        self.__ship_ratios = ship_ratios
-        self.__torpedos = torpedos
-
-    def add_enemy(self):
-
-        def check_y_position(y):
-            #Method to check if any other enemy is on the same position or within a frame of 80 pixels
-
-            for e in self.get_enemies():
-                if e.get_rect()[1] - 40 < y < e.get_rect()[3] + 40:
-                    return True
-            return False
-
-        def make_ship():
-            ############################################################################################################
-            # Function to randomize a ship and its params based on the ratios specified in __ship_ratios.              #
-            ############################################################################################################
-
-            ship_type = randrange(1,100,1)
-            ship_type_count = len(self.__ship_ratios)
-            for i in range(ship_type_count):
-                if ship_type in range(self.__ship_ratios[i][0], self.__ship_ratios[i][1]):
-                    ship_type = i
-                    break
-
-
-            #Define ship types
-            if ship_type == 0:
-                param_dict = Submarine.get_params()
-            elif ship_type == 1:
-                param_dict = Torpedoboat.get_params()
-
-            speed = randrange(param_dict["min_speed"], param_dict["max_speed"], 1)
-
-            good_y = False
-
-            while not good_y:
-                y_rand = randrange(0,2,1)
-                if y_rand == 0:
-                    y = randrange(10, self.__window_size[1]/2-param_dict["min_dist"])
-                if y_rand == 1:
-                    y = randrange(self.__window_size[1]/2+param_dict["min_dist"], self.__window_size[1]-10)
-                if not check_y_position(y):
-                    good_y = True
-
-            dir_rand = randrange(0,2,1)
-            direction = 1 if dir_rand == 0 else 3
-            if direction == 1:
-                origin = -150,y
-            if direction == 3:
-                origin = self.__window_size[0], y
-
-            #Assign classes to the ship types
-            if ship_type == 0:
-                ship = Submarine(speed, origin, direction)
-            elif ship_type == 1 :
-                ship = Torpedoboat(speed, origin, direction)
-
-            return ship
-
-        if len(self.__enemy_list) == 0:
-            self.__enemy_list.append(make_ship())
-            self.__next_enemy_in = randrange(self.__wait_time_range[0], self.__wait_time_range[1], 1)
-            self.__old_time = datetime.datetime.now()
-        else:
-            if len(self.get_enemies()) < self.__max_enemies:
-                new_time = datetime.datetime.now()
-                if (new_time - self.__old_time).total_seconds() > self.__next_enemy_in:
-                    self.__enemy_list.append(make_ship())
-                    print(self.__enemy_list[-1].has_torpedo())
-                    self.__next_enemy_in = randrange(self.__wait_time_range[0], self.__wait_time_range[1], 1)
-                    self.__old_time = new_time
-
-    def move(self):
-        for e in self.__enemy_list:
-            e.move()
-
-    def shoot(self):
-        for e in self.__enemy_list:
-            if e.has_torpedo() and not e.get_torpedo_shot():
-                if e.get_direction() == 1:
-                    center_point = e.get_center_point()
-                    if center_point[0] > self.__window_size[0]/2:
-                        if center_point[1] < self.__window_size[1]/2:
-                            direction = 2
-                        else:
-                            direction = 0
-                        if e.get_params()["torpedo_type"] == 0:
-                            self.__torpedos.add_torpedo(Torpedo_0(Torpedo_0.get_params()["min_speed"],
-                                                                  center_point,direction))
-                        if e.get_params()["torpedo_type"] == 1:
-                            self.__torpedos.add_torpedo(Torpedo_1(Torpedo_1.get_params()["min_speed"],
-                                                              center_point,direction))
-                        e.set_torpedo_shot()
-
-                if e.get_direction() == 3:
-                    center_point = e.get_center_point()
-                    if center_point[0] < self.__window_size[0]/2:
-                        if center_point[1] < self.__window_size[1]/2:
-                            direction = 2
-                        else:
-                            direction = 0
-                        if e.get_params()["torpedo_type"] == 0:
-                            self.__torpedos.add_torpedo(Torpedo_0(Torpedo_0.get_params()["min_speed"],
-                                                                  center_point,direction))
-                        if e.get_params()["torpedo_type"] == 1:
-                            self.__torpedos.add_torpedo(Torpedo_1(Torpedo_1.get_params()["min_speed"],
-                                                                  center_point,direction))
-                        e.set_torpedo_shot()
-
-
-    def get_enemies(self):
-        return self.__enemy_list
-
-    def remove_enemies(self, indices):
-        if len(indices) > 0:
-            new_list = []
-            for e in range(len(self.__enemy_list)):
-                if not e in indices:
-                    new_list.append(self.__enemy_list[e])
-            self.__enemy_list = new_list
-
-    def set_max_enemies(self, count):
-        self.__max_enemies = count
-
-
-class Torpedos(object):
-    def __init__(self):
-        self.__torpedo_list = []
-
-    def get_torpedos(self):
-        return self.__torpedo_list
-
-    def add_torpedo(self, torpedo):
-        self.__torpedo_list.append(torpedo)
-
-    def move(self):
-        for t in self.__torpedo_list:
-            t.move()
-
-    def remove_torpedos(self, indices):
-        if len(indices) > 0:
-            new_list = []
-            for e in range(len(self.__torpedo_list)):
-                if not e in indices:
-                    new_list.append(self.__torpedo_list[e])
-            self.__torpedo_list = new_list
 
 
 class Bullet(object):
@@ -611,33 +455,3 @@ class Bullet(object):
     def get_power(self):
         return self.__power
 
-
-class Bullets(object):
-
-    def __init__(self, origin, window_size):
-        self.__origin = origin
-        self.__window_size = window_size
-        self.__bullet_list = []
-
-    def add_bullet(self, type, power, direction, speed):
-        self.__bullet_list.append(Bullet(type, power, self.__origin, direction, speed))
-
-    def move(self):
-        pop_list = []
-        for i in range(len(self.__bullet_list)):
-            if self.__bullet_list[i].move() == -1:
-                pop_list.append(i)
-
-        for p in pop_list:
-            self.__bullet_list.pop(p)
-
-    def get_bullets(self):
-        return self.__bullet_list
-
-    def remove_bullets(self, indices):
-        if len(indices)>0:
-            new_list = []
-            for b in range(len(self.__bullet_list)):
-                if not b in indices:
-                    new_list.append(self.__bullet_list[b])
-            self.__bullet_list = new_list
