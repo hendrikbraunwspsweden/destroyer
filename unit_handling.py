@@ -2,7 +2,7 @@ from units import *
 
 class Enemies():
 
-    def __init__(self, wait_time_range, max_enemies, torpedos, window_size, ship_ratios=[(1,20),(20,100)]):
+    def __init__(self, wait_time_range, max_enemies, torpedos, game_speed, window_size, ship_ratios=[(1, 20), (20, 100)]):
         ################################################################################################################
         # Ship_ratios is specified of number ranges between 1 and 100 for the different ship types. If ship type 1 is  #
         # to have a 70% chance of appearing and it is first in the list, then the range should be defined as (1,70)    #
@@ -18,6 +18,7 @@ class Enemies():
         self.__window_size = window_size
         self.__ship_ratios = ship_ratios
         self.__torpedos = torpedos
+        self.__game_speed = game_speed
 
     def add_enemy(self):
 
@@ -40,7 +41,6 @@ class Enemies():
                 if ship_type in range(self.__ship_ratios[i][0], self.__ship_ratios[i][1]):
                     ship_type = i
                     break
-
 
             #Define ship types
             if ship_type == 0:
@@ -85,13 +85,12 @@ class Enemies():
                 new_time = datetime.datetime.now()
                 if (new_time - self.__old_time).total_seconds() > self.__next_enemy_in:
                     self.__enemy_list.append(make_ship())
-                    print(self.__enemy_list[-1].has_torpedo())
                     self.__next_enemy_in = randrange(self.__wait_time_range[0], self.__wait_time_range[1], 1)
                     self.__old_time = new_time
 
     def move(self):
         for e in self.__enemy_list:
-            e.move()
+            e.move(self.__game_speed)
 
     def shoot(self):
         for e in self.__enemy_list:
@@ -163,6 +162,7 @@ class Torpedos(object):
                 if not e in indices:
                     new_list.append(self.__torpedo_list[e])
             self.__torpedo_list = new_list
+
 
 class Bullets(object):
 

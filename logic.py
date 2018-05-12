@@ -1,12 +1,37 @@
+from gfx import *
+import pygame
+
+class Points(object):
+    def __init__(self):
+        self.__points = 0
+        self.__myfont = pygame.font.SysFont('Comic Sans MS', 20)
+
+    def add_points(self, points):
+        self.__points += points
+
+    def reduce_points(self, points):
+        if self.__points >= 0 + points:
+            self.__points -= points
+        else:
+            self.__points = 0
+
+    def get_points(self):
+        return self.__points
+
+    def get_image(self):
+        return self.__myfont.render('Points: {}'.format(self.__points), False, (200, 200, 200))
+
 class Destroyer_logic(object):
 
-    def __init__(self, destroyer, enemies, bullets, torpedos, fades, window_size):
+    def __init__(self, destroyer, enemies, bullets, torpedos, explosions, fades, points, window_size):
         self.__destroyer = destroyer
         self.__bullets = bullets
         self.__enemies = enemies
         self.__fades = fades
         self.__window_size = window_size
         self.__torpedos = torpedos
+        self.__explosions = explosions
+        self.__points = points
 
     def __check_bullets(self):
         bullet_remove_list = []
@@ -30,6 +55,8 @@ class Destroyer_logic(object):
                     print(enemy_list[e].get_hp(), bullet_list[b].get_power())
                     if enemy_list[e].reduce_hp(bullet_list[b].get_power()):
                         enemy_remove_list.append(e)
+                        self.__points.add_points(enemy_list[e].get_params()["points"])
+                        self.__explosions.add_explosion(Explosion(bullet_list[b].get_position(), 20))
                         self.__fades.add_fade(enemy_list[e].get_image()[0], enemy_list[e].get_image()[1], 0.5)
         return bullet_remove_list, enemy_remove_list
 
@@ -42,18 +69,22 @@ class Destroyer_logic(object):
             if enemies[i].get_direction() == 0:
                 if rect[1] <= 0:
                     enemies_remove_list.append(i)
+                    self.__points.reduce_points(enemies[i].get_params()["points"]/2)
 
             if enemies[i].get_direction() == 1:
                 if rect[0] >= self.__window_size[0]:
                     enemies_remove_list.append(i)
+                    self.__points.reduce_points(enemies[i].get_params()["points"]/2)
 
             if enemies[i].get_direction() == 2:
                 if rect[1] > self.__window_size:
                     enemies_remove_list.append(i)
+                    self.__points.reduce_points(enemies[i].get_params()["points"]/2)
 
             if enemies[i].get_direction() == 3:
                 if rect[2] <= 0:
                     enemies_remove_list.append(i)
+                    self.__points.reduce_points(enemies[i].get_params()["points"]/2)
         return enemies_remove_list
 
     def __check_torpedos(self):
@@ -65,6 +96,7 @@ class Destroyer_logic(object):
 
             if torpedos[i].get_image()[1].colliderect(self.__destroyer.get_image()[1]):
                 torpedos_remove_list.append(i)
+                self.__explosions.add_explosion(Explosion(torpedos[i].get_position(), 20))
                 print(self.__torpedos.get_torpedos()[i].get_damage())
                 if self.__destroyer.reduce_hp(self.__torpedos.get_torpedos()[i].get_damage()):
                     destroyer_destroyed = True
@@ -94,6 +126,8 @@ class Destroyer_logic(object):
                 if bullet_list[b].get_image()[1].colliderect(torpedo_list[e].get_image()[1]):
                     bullet_remove_list.append(b)
                     torpedo_remove_list.append(e)
+                    self.__points.add_points(torpedo_list[e].get_params()["points"])
+                    self.__explosions.add_explosion(Explosion(bullet_list[b].get_position(), 20))
                     self.__fades.add_fade(torpedo_list[e].get_image()[0], torpedo_list[e].get_image()[1], 0.5)
         return bullet_remove_list, torpedo_remove_list
 

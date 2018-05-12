@@ -50,6 +50,7 @@ class Destroyer(object):
         self.__image = None
         self.__reload_time = None
         self.__hp = hp
+        self.__max_hp = hp
         self.__last_shot = None
         self.__window_size = window_size
 
@@ -127,6 +128,11 @@ class Destroyer(object):
         else:
             return False
 
+    def get_hp(self):
+        return self.__hp
+
+    def get_max_hp(self):
+        return self.__max_hp
 
 class Enemy(object):
     ####################################################################################################################
@@ -185,12 +191,13 @@ class Enemy(object):
     def get_center_point(self):
         return self._position[0] + self._image_size[0]/2, self._position[1] + self._image_size[1]/2
 
-    def move(self, level=1):
+    def move(self, level=0):
         new_time = datetime.datetime.now()
         time_delta = new_time - self._old_time
         self._old_time = new_time
-        vector_delta = time_delta.total_seconds() * (self._px_per_second + self._param_dict["game_speed_multiplier"] *
-            level)
+        vector_delta = time_delta.total_seconds() * (self._px_per_second + (self._px_per_second *
+                                                     self._param_dict["game_speed_multiplier"] *
+                                                     level))
 
         if self._direction == 0:
             self._real_position = self._real_position[0], self._real_position[1] - vector_delta
@@ -222,7 +229,6 @@ class Enemy(object):
                 if self._has_torpedo is None:
                     chance = self._param_dict["torpedo_chance"]*10
                     rand = randrange(1,10,1)
-                    print(rand,chance)
                     if rand <= chance:
                         self._has_torpedo = True
                         return True
@@ -270,7 +276,7 @@ class Submarine(Enemy):
         "hp":200,
         "min_speed":60,
         "max_speed":80,
-        "game_speed_multiplier":1,
+        "game_speed_multiplier":0.1,
         "min_dist":100,
         "has_torpedo":True,
         "torpedo_type":1,
@@ -305,7 +311,7 @@ class Torpedoboat(Enemy):
         "hp":100,
         "min_speed":150,
         "max_speed":200,
-        "game_speed_multiplier":None,
+        "game_speed_multiplier":0.1,
         "min_dist":100,
         "has_torpedo":True,
         "torpedo_type":0,
@@ -340,7 +346,7 @@ class Torpedo_0(Enemy):
         "hp":100,
         "min_speed":60,
         "max_speed":60,
-        "game_speed_multiplier":1,
+        "game_speed_multiplier":0.1,
         "min_dist":100,
         "has_torpedo":False,
         "torpedo_type":0,
@@ -379,6 +385,7 @@ class Torpedo_1(Enemy):
         "hp":100,
         "min_speed":60,
         "max_speed":60,
+        "game_speed_multiplier":0,
         "min_dist":100,
         "has_torpedo":False,
         "torpedo_type":0,

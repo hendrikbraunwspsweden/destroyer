@@ -8,7 +8,7 @@ from time import sleep
 
 class Destroyer_game(object):
 
-    def __init__(self, window_size=(1024,800), game_speed=1, max_enemies=5, enemy_wait_range=(2, 4)):
+    def __init__(self, window_size=(1024,800), game_speed=0, max_enemies=5, enemy_wait_range=(2, 4)):
         self.__window_size = window_size
         self.__game_speed = game_speed
         self.__max_enemies = max_enemies
@@ -19,25 +19,30 @@ class Destroyer_game(object):
         self.__window_size = window_size
 
         pygame.init()
-        destroyer = Destroyer(0,500, 100, window_size)
+        pygame.font.init()
+        points = Points()
+        explosions = Explosions()
+        destroyer = Destroyer(0,500, 500, window_size)
         bullets = Bullets((window_size[0]/2, window_size[1]/2), window_size)
         torpedos = Torpedos()
-        enemies = Enemies(enemy_wait_range, max_enemies, torpedos, window_size)
+        enemies = Enemies(enemy_wait_range, max_enemies, torpedos, game_speed, window_size)
         fades = Fades()
         enemies.add_enemy()
-        logic = Destroyer_logic(destroyer, enemies, bullets, torpedos, fades, window_size)
-        graphics = Destroyer_gfx(window_size, destroyer, enemies, bullets, torpedos, fades, "./media/background.png")
+        logic = Destroyer_logic(destroyer, enemies, bullets, torpedos, explosions, fades, points, window_size)
+        graphics = Destroyer_gfx(window_size, destroyer, enemies, bullets, torpedos, explosions, fades, points,
+                                 "./media/background.png")
         graphics.draw()
+
 
         exit_game = False
 
         while not exit_game:
-
             enemies.add_enemy()
             enemies.move()
             enemies.shoot()
             torpedos.move()
             bullets.move()
+            explosions.change_frames()
             if logic.check():
                 sys.exit()
             fades.fade()
