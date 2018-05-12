@@ -4,7 +4,6 @@ import pygame
 class Points(object):
     def __init__(self):
         self.__points = 0
-        self.__myfont = pygame.font.SysFont('Comic Sans MS', 20)
 
     def add_points(self, points):
         self.__points += points
@@ -17,9 +16,6 @@ class Points(object):
 
     def get_points(self):
         return self.__points
-
-    def get_image(self):
-        return self.__myfont.render('Points: {}'.format(self.__points), False, (200, 200, 200))
 
 class Destroyer_logic(object):
 

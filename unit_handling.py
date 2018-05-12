@@ -2,7 +2,8 @@ from units import *
 
 class Enemies():
 
-    def __init__(self, wait_time_range, max_enemies, torpedos, game_speed, window_size, ship_ratios=[(1, 20), (20, 100)]):
+    def __init__(self, wait_time_range, max_enemies, torpedos, game_speed, window_size, top_distance,
+                 ship_ratios=[(1, 20), (20, 100)]):
         ################################################################################################################
         # Ship_ratios is specified of number ranges between 1 and 100 for the different ship types. If ship type 1 is  #
         # to have a 70% chance of appearing and it is first in the list, then the range should be defined as (1,70)    #
@@ -19,6 +20,7 @@ class Enemies():
         self.__ship_ratios = ship_ratios
         self.__torpedos = torpedos
         self.__game_speed = game_speed
+        self.__top_distance = top_distance
 
     def add_enemy(self):
 
@@ -55,7 +57,7 @@ class Enemies():
             while not good_y:
                 y_rand = randrange(0,2,1)
                 if y_rand == 0:
-                    y = randrange(10, self.__window_size[1]/2-param_dict["min_dist"])
+                    y = randrange(self.__top_distance + 10, self.__window_size[1]/2-param_dict["min_dist"])
                 if y_rand == 1:
                     y = randrange(self.__window_size[1]/2+param_dict["min_dist"], self.__window_size[1]-10)
                 if not check_y_position(y):

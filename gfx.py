@@ -114,7 +114,8 @@ class Explosions(object):
 
 class Destroyer_gfx(object):
 
-    def __init__(self, window_size, destroyer, enemies, bullets, torpedos, explosions, fades, points, bg_image):
+    def __init__(self, window_size, destroyer, enemies, bullets, torpedos, explosions, fades, points, font_size,
+                 bg_image):
         self.__destroyer = destroyer
         self.__enemies = enemies
         self.__bullets = bullets
@@ -125,15 +126,19 @@ class Destroyer_gfx(object):
         self.__window_size = window_size
         self.__explosions = explosions
         self.__points = points
+        self.__font_size = font_size
         self.make_background()
 
     def __render_hud(self):
-        self.__screen.blit(self.__points.get_image(), (0,0))
+        myfont = pygame.font.SysFont('Comic Sans MS', self.__font_size)
+        rect = pygame.Rect(0,0,self.__window_size[0],self.__font_size)
+        pygame.draw.rect(self.__screen, (150,150,150), rect, 0)
 
-        myfont = pygame.font.SysFont('Comic Sans MS', 20)
+        points = myfont.render('Points: {}'.format(self.__points.get_points()), False, (255, 255, 255))
+        self.__screen.blit(points, (0,0))
+
         hp_ratio = self.__destroyer.get_hp() / float(self.__destroyer.get_max_hp())
-        print(hp_ratio)
-        surface = myfont.render('Points: {}'.format(self.__destroyer.get_hp()), False, (255, 255*hp_ratio,255*hp_ratio))
+        surface = myfont.render('Life: {}'.format(self.__destroyer.get_hp()), False, (255, 255*hp_ratio,255*hp_ratio))
 
         self.__screen.blit(surface, (100,0))
 

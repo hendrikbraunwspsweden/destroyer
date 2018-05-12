@@ -8,7 +8,7 @@ from time import sleep
 
 class Destroyer_game(object):
 
-    def __init__(self, window_size=(1024,800), game_speed=0, max_enemies=5, enemy_wait_range=(2, 4)):
+    def __init__(self, window_size=(1024,800), game_speed=0, max_enemies=5, enemy_wait_range=(2, 4), font_size=22):
         self.__window_size = window_size
         self.__game_speed = game_speed
         self.__max_enemies = max_enemies
@@ -17,6 +17,8 @@ class Destroyer_game(object):
         self.__enemy_strenght = None
         self.__max_enemies = max_enemies
         self.__window_size = window_size
+        self.__font_size = font_size
+
 
         pygame.init()
         pygame.font.init()
@@ -25,14 +27,13 @@ class Destroyer_game(object):
         destroyer = Destroyer(0,500, 500, window_size)
         bullets = Bullets((window_size[0]/2, window_size[1]/2), window_size)
         torpedos = Torpedos()
-        enemies = Enemies(enemy_wait_range, max_enemies, torpedos, game_speed, window_size)
+        enemies = Enemies(enemy_wait_range, max_enemies, torpedos, game_speed, window_size, font_size)
         fades = Fades()
         enemies.add_enemy()
         logic = Destroyer_logic(destroyer, enemies, bullets, torpedos, explosions, fades, points, window_size)
         graphics = Destroyer_gfx(window_size, destroyer, enemies, bullets, torpedos, explosions, fades, points,
-                                 "./media/background.png")
+                                 font_size, "./media/background.png")
         graphics.draw()
-
 
         exit_game = False
 
