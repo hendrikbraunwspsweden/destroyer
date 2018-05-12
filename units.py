@@ -45,10 +45,11 @@ def project_point(original_x, original_y, bearing, distance):
 
 class Destroyer(object):
 
-    def __init__(self, type, reload_time, window_size):
+    def __init__(self, type, reload_time, hp, window_size):
         self.__tower_direction = 0
         self.__image = None
         self.__reload_time = None
+        self.__hp = hp
         self.__last_shot = None
         self.__window_size = window_size
 
@@ -116,11 +117,46 @@ class Destroyer(object):
     def get_direction(self):
         return self.__tower_direction
 
+    def reduce_hp(self, hp):
+        ################################################################################################################
+        # Reduced hp by a specified number and returns True if no hp left                                              #
+        ################################################################################################################
+        self.__hp -= hp
+        if self.__hp <= 0:
+            return True
+        else:
+            return False
+
 
 class Enemy(object):
+    ####################################################################################################################
+    # Base class for enemy objects. That can be ships as well as for example torpedos. The parameter dict _param_dict  #
+    # defines the general outline of how the attributes for each sub class are defined:                                #
+    # "strength" (int)      : enemy strength points                                                                    #
+    # "min_speed" (int)     : minimum unit speed in px/sec                                                             #
+    # "max_speed" (int)     : maximum unit speed int px/sec                                                            #
+    # "min_dist" (int)      : minumum distance from the unit to the destroyer's horizontal center line in px           #
+    # "has_torpedo" (bool)  : defines if the unit shoots torpedos                                                      #
+    # "torpedo_type(int)    : torpedo type                                                                             #
+    # "torpedo_speed(int)   : torpedo speed in px/sec                                                                  #
+    # "torpedo_chance(float): chance of shooting torpedo, between 0.0 and 1.0                                          #
+    # "points (int)         : points awarded to player when enemy is shot                                              #
+    ####################################################################################################################
 
-    def __init__(self, strength, px_per_second, origin, direction):
-        self._strength = strength
+    _param_dict = {
+        "hp":None,
+        "min_speed":None,
+        "max_speed": None,
+        "min_dist":None,
+        "has_torpedo":None,
+        "torpedo_type":None,
+        "torpedo_speed":None,
+        "torpedo_chance":None,
+        "points":None
+    }
+
+    def __init__(self, hp, px_per_second, origin, direction):
+        self._hp = hp
         self._position = origin
         self._direction = direction
         self._px_per_second = px_per_second
@@ -129,8 +165,8 @@ class Enemy(object):
         self._image = None
         self._image_size = None
         self._rect = None
-        self._param_dict = {}
         self._has_torpedo = None
+        self._torpedo_shot = False
 
     def get_rect(self):
         rect = self._position[0], self._position[1], self._position[0] + self._rect[2], self._position[1] + \
@@ -143,11 +179,16 @@ class Enemy(object):
     def get_position(self):
         return self._position
 
+    def get_center_point(self):
+        return self._position[0] + self._image_size[0]/2, self._position[1] + self._image_size[1]/2
+
     def move(self):
         new_time = datetime.datetime.now()
         time_delta = new_time - self._old_time
         self._old_time = new_time
         vector_delta = floor(time_delta.total_seconds() * self._px_per_second)
+        if vector_delta == 0:
+            vector_delta = 1
 
         if self._direction == 0:
             self._position = self._position[0], self._position[1] - vector_delta
@@ -175,15 +216,42 @@ class Enemy(object):
     def has_torpedo(self):
             if self._param_dict["has_torpedo"]:
                 if self._has_torpedo is None:
-                    chance = self._param_dict["torpedo_chance"]
-                    rand = randrange(0,10,1)
-                    if rand <= chance*10:
+                    chance = self._param_dict["torpedo_chance"]*10
+                    rand = randrange(1,10,1)
+                    print(rand,chance)
+                    if rand <= chance:
+                        self._has_torpedo = True
+                        return True
+                    else:
+                        self._has_torpedo = False
+                        return False
+                else:
+                    if self._has_torpedo:
                         return True
                     else:
                         return False
+
             else:
                 return False
 
+    def set_torpedo_shot(self):
+        self._torpedo_shot = True
+
+    def get_torpedo_shot(self):
+        return self._torpedo_shot
+
+    def reduce_hp(self, hp):
+        ################################################################################################################
+        # Reduced hp by a specified number and returns True if no hp left                                              #
+        ################################################################################################################
+        self._hp -= hp
+        if self._hp <= 0:
+            return True
+        else:
+            return False
+
+    def get_hp(self):
+        return self._hp
 
     def set_ship_param(self, param, value):
         try:
@@ -195,20 +263,22 @@ class Enemy(object):
 class Submarine(Enemy):
 
     param_dict = {
-        "strength":100,
+        "hp":200,
         "min_speed":60,
         "max_speed":80,
-        "has_torpedo":False,
-        "torpedo_type":0,
-        "torpedo_speed":0,
-        "torpedo_chance":0,
+        "min_dist":100,
+        "has_torpedo":True,
+        "torpedo_type":1,
+        "torpedo_speed":30,
+        "torpedo_chance":0.6,
         "points":100
     }
 
-    def __init__(self, strength, px_per_second, origin, direction):
+    def __init__(self, px_per_second, origin, direction):
 
-        Enemy.__init__(self, strength, px_per_second, origin, direction)
+        Enemy.__init__(self, self.param_dict["hp"], px_per_second, origin, direction)
 
+        #Handing over parameter dict to parent
         self._param_dict = self.param_dict
 
         #Setting image related parameters
@@ -223,22 +293,26 @@ class Submarine(Enemy):
     def get_params(cls):
         return cls.param_dict
 
+
 class Torpedoboat(Enemy):
 
     param_dict = {
-        "strength":100,
+        "hp":100,
         "min_speed":150,
         "max_speed":200,
+        "min_dist":100,
         "has_torpedo":True,
         "torpedo_type":0,
         "torpedo_speed":0,
-        "torpedo_chance":0.2,
+        "torpedo_chance":0.4,
         "points":100
     }
 
-    def __init__(self, strength, px_per_second, origin, direction):
+    def __init__(self, px_per_second, origin, direction):
 
-        Enemy.__init__(self, strength, px_per_second, origin, direction)
+        Enemy.__init__(self, self.param_dict["hp"], px_per_second, origin, direction)
+
+        #Handing over parameter dict to parent
         self._param_dict = self.param_dict
 
         #Setting image related parameters
@@ -254,29 +328,31 @@ class Torpedoboat(Enemy):
         return cls.param_dict
 
 
-class Torpedo(Enemy):
+class Torpedo_0(Enemy):
 
     param_dict = {
-        "strength":100,
-        "min_speed":50,
-        "max_speed":51,
+        "hp":100,
+        "min_speed":60,
+        "max_speed":60,
+        "min_dist":100,
         "has_torpedo":False,
         "torpedo_type":0,
         "torpedo_speed":0,
         "torpedo_chance":0,
-        "points":100
+        "points":300,
+        "damage":50
     }
 
-    def __init__(self, strength, px_per_second, origin, direction):
+    def __init__(self, px_per_second, origin, direction):
 
-        Enemy.__init__(self, strength, px_per_second, origin, direction)
+        Enemy.__init__(self, self.param_dict["hp"], px_per_second, origin, direction)
 
-        #Handling over the parameter dict to the parent class
+        #Handing over the parameter dict to the parent class
         self._param_dict = self.param_dict
 
         #Setting image related parameters
-        self._image = pygame.image.load("./media/torpedoboat.png")
-        if self._direction == 1:
+        self._image = pygame.image.load("./media/torpedo1.png")
+        if self._direction == 0:
             self._image = pygame.transform.rotate(self._image, 180)
         self._image_size = self._image.get_rect()[2], self._image.get_rect()[3]
         self._rect = pygame.Rect(self._position[0], self._position[1]-self._image_size[1]/2,
@@ -284,18 +360,51 @@ class Torpedo(Enemy):
 
     @classmethod
     def get_params(cls):
-        return cls._param_dict
+        return cls.param_dict
 
-    def set_ship_param(self, param, value):
-        try:
-            self._param_dict[param] = value
-        except:
-            return 1
+    def get_damage(self):
+        return self._param_dict["damage"]
 
+class Torpedo_1(Enemy):
+
+    param_dict = {
+        "hp":100,
+        "min_speed":60,
+        "max_speed":60,
+        "min_dist":100,
+        "has_torpedo":False,
+        "torpedo_type":0,
+        "torpedo_speed":0,
+        "torpedo_chance":0,
+        "points":300,
+        "damage":100
+    }
+
+    def __init__(self, px_per_second, origin, direction):
+
+        Enemy.__init__(self, self.param_dict["hp"], px_per_second, origin, direction)
+
+        #Handing over the parameter dict to the parent class
+        self._param_dict = self.param_dict
+
+        #Setting image related parameters
+        self._image = pygame.image.load("./media/torpedo1.png")
+        if self._direction == 0:
+            self._image = pygame.transform.rotate(self._image, 180)
+        self._image_size = self._image.get_rect()[2], self._image.get_rect()[3]
+        self._rect = pygame.Rect(self._position[0], self._position[1]-self._image_size[1]/2,
+                                 self._image_size[0], self._image_size[1])
+
+    @classmethod
+    def get_params(cls):
+        return cls.param_dict
+
+    def get_damage(self):
+        return self._param_dict["damage"]
 
 class Enemies():
 
-    def __init__(self, wait_time_range, max_enemies, window_size, ship_ratios=[(1,20),(20,100)]):
+    def __init__(self, wait_time_range, max_enemies, torpedos, window_size, ship_ratios=[(1,20),(20,100)]):
         ################################################################################################################
         # Ship_ratios is specified of number ranges between 1 and 100 for the different ship types. If ship type 1 is  #
         # to have a 70% chance of appearing and it is first in the list, then the range should be defined as (1,70)    #
@@ -310,6 +419,7 @@ class Enemies():
         self.__next_enemy_in = 0
         self.__window_size = window_size
         self.__ship_ratios = ship_ratios
+        self.__torpedos = torpedos
 
     def add_enemy(self):
 
@@ -340,7 +450,6 @@ class Enemies():
             elif ship_type == 1:
                 param_dict = Torpedoboat.get_params()
 
-            strength = param_dict["strength"]
             speed = randrange(param_dict["min_speed"], param_dict["max_speed"], 1)
 
             good_y = False
@@ -348,9 +457,9 @@ class Enemies():
             while not good_y:
                 y_rand = randrange(0,2,1)
                 if y_rand == 0:
-                    y = randrange(10, self.__window_size[1]/2-40)
+                    y = randrange(10, self.__window_size[1]/2-param_dict["min_dist"])
                 if y_rand == 1:
-                    y = randrange(self.__window_size[1]/2+40, self.__window_size[1]-10)
+                    y = randrange(self.__window_size[1]/2+param_dict["min_dist"], self.__window_size[1]-10)
                 if not check_y_position(y):
                     good_y = True
 
@@ -363,12 +472,11 @@ class Enemies():
 
             #Assign classes to the ship types
             if ship_type == 0:
-                ship = Submarine(strength, speed, origin, direction)
+                ship = Submarine(speed, origin, direction)
             elif ship_type == 1 :
-                ship = Torpedoboat(strength, speed, origin, direction)
+                ship = Torpedoboat(speed, origin, direction)
 
             return ship
-
 
         if len(self.__enemy_list) == 0:
             self.__enemy_list.append(make_ship())
@@ -387,6 +495,40 @@ class Enemies():
         for e in self.__enemy_list:
             e.move()
 
+    def shoot(self):
+        for e in self.__enemy_list:
+            if e.has_torpedo() and not e.get_torpedo_shot():
+                if e.get_direction() == 1:
+                    center_point = e.get_center_point()
+                    if center_point[0] > self.__window_size[0]/2:
+                        if center_point[1] < self.__window_size[1]/2:
+                            direction = 2
+                        else:
+                            direction = 0
+                        if e.get_params()["torpedo_type"] == 0:
+                            self.__torpedos.add_torpedo(Torpedo_0(Torpedo_0.get_params()["min_speed"],
+                                                                  center_point,direction))
+                        if e.get_params()["torpedo_type"] == 1:
+                            self.__torpedos.add_torpedo(Torpedo_1(Torpedo_1.get_params()["min_speed"],
+                                                              center_point,direction))
+                        e.set_torpedo_shot()
+
+                if e.get_direction() == 3:
+                    center_point = e.get_center_point()
+                    if center_point[0] < self.__window_size[0]/2:
+                        if center_point[1] < self.__window_size[1]/2:
+                            direction = 2
+                        else:
+                            direction = 0
+                        if e.get_params()["torpedo_type"] == 0:
+                            self.__torpedos.add_torpedo(Torpedo_0(Torpedo_0.get_params()["min_speed"],
+                                                                  center_point,direction))
+                        if e.get_params()["torpedo_type"] == 1:
+                            self.__torpedos.add_torpedo(Torpedo_1(Torpedo_1.get_params()["min_speed"],
+                                                                  center_point,direction))
+                        e.set_torpedo_shot()
+
+
     def get_enemies(self):
         return self.__enemy_list
 
@@ -400,6 +542,29 @@ class Enemies():
 
     def set_max_enemies(self, count):
         self.__max_enemies = count
+
+
+class Torpedos(object):
+    def __init__(self):
+        self.__torpedo_list = []
+
+    def get_torpedos(self):
+        return self.__torpedo_list
+
+    def add_torpedo(self, torpedo):
+        self.__torpedo_list.append(torpedo)
+
+    def move(self):
+        for t in self.__torpedo_list:
+            t.move()
+
+    def remove_torpedos(self, indices):
+        if len(indices) > 0:
+            new_list = []
+            for e in range(len(self.__torpedo_list)):
+                if not e in indices:
+                    new_list.append(self.__torpedo_list[e])
+            self.__torpedo_list = new_list
 
 
 class Bullet(object):
@@ -442,6 +607,9 @@ class Bullet(object):
 
     def get_image(self):
         return self.__image, self.__rect
+
+    def get_power(self):
+        return self.__power
 
 
 class Bullets(object):

@@ -57,10 +57,11 @@ class Fades(object):
 
 class Destroyer_gfx(object):
 
-    def __init__(self, window_size, destroyer, enemies, bullets, fades, bg_image):
+    def __init__(self, window_size, destroyer, enemies, bullets, torpedos, fades, bg_image):
         self.__destroyer = destroyer
         self.__enemies = enemies
         self.__bullets = bullets
+        self.__torpedos = torpedos
         self.__fades = fades
         self.__screen = pygame.display.set_mode(window_size)
         self.__background_path = bg_image
@@ -89,6 +90,9 @@ class Destroyer_gfx(object):
 
         pygame.draw.line(self.__screen, (102,102,102), (self.__window_size[0]/2, self.__window_size[1]/2),
                          (self.__destroyer.get_pipe()), 8)
+
+        for t in self.__torpedos.get_torpedos():
+            self.__screen.blit(t.get_image()[0], t.get_image()[1])
 
         for e in self.__enemies.get_enemies():
             self.__screen.blit(e.get_image()[0], e.get_image()[1])
