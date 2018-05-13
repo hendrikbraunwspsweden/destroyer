@@ -55,6 +55,64 @@ class Fades(object):
         return self.__fade_list
 
 
+class Text_fx(object):
+    def __init__(self, origin, text, time, movement, positive=True):
+        self._text = text
+        self._time = time
+        self._movement = movement
+        self._alpha_steps = 255/self._time
+        self._steps = self._movement/self._time
+        self._old_time = datetime.datetime.now()
+        self._total_time = 0
+        self._alpha = 255
+        self._color = (0,0,0)
+        self._rect = None
+
+        if not positive:
+            self._color = (255,0,0)
+
+        myfont = pygame.font.SysFont('Comic Sans MS', 10)
+        self._image = myfont.render(self._text, False, self._color)
+        rect = self._image.get_rect()
+        self._position = (origin[0] - (rect[2]/2), origin[1] - (rect[3]/2))
+        self._rect = (self._position[0], self._position[1], rect[2], rect[3])
+
+    def move(self):
+        if self._alpha < 0:
+            return -1
+        else:
+            new_time = datetime.datetime.now()
+            self._total_time += (new_time - self._old_time).total_seconds()
+            self._alpha = 255 - self._alpha_steps * self._total_time
+            self._position = self._position[0], round(self._position[1]-self._steps*self._total_time,0)
+        self._old_time = new_time
+        return 0
+
+    def get_image(self):
+        return self._image, self._rect
+
+    def get_alpha(self):
+        return self._alpha
+
+
+class Texts(object):
+    def __init__(self):
+        self.__text_list = []
+
+    def add_text(self, origin, text):
+        self.__text_list.append(Text_fx(origin, text, 0.6, 60))
+
+    def move(self):
+        new_texts = []
+        for i in range(len(self.__text_list)):
+            if not self.__text_list[i].move() == -1:
+                new_texts.append(self.__text_list[i])
+        self.__text_list = new_texts
+
+    def get_texts(self):
+        return self.__text_list
+
+
 class Explosion(object):
     def __init__(self, origin, pause):
         self.__frame = 1
@@ -114,7 +172,7 @@ class Explosions(object):
 
 class Destroyer_gfx(object):
 
-    def __init__(self, window_size, destroyer, enemies, bullets, torpedos, explosions, fades, points, font_size,
+    def __init__(self, window_size, destroyer, enemies, bullets, torpedos, explosions, fades, texts, points, font_size,
                  bg_image):
         self.__destroyer = destroyer
         self.__enemies = enemies
@@ -126,6 +184,7 @@ class Destroyer_gfx(object):
         self.__window_size = window_size
         self.__explosions = explosions
         self.__points = points
+        self.__texts = texts
         self.__font_size = font_size
         self.make_background()
 
@@ -173,6 +232,9 @@ class Destroyer_gfx(object):
 
         for e in self.__explosions.get_explosions():
             self.__screen.blit(e.get_image()[0], e.get_image()[1])
+
+        for f in self.__texts.get_texts():
+            blit_alpha(self.__screen, f.get_image()[0], f.get_image()[1], f.get_alpha())
 
         self.__render_hud()
 

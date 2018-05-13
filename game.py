@@ -8,7 +8,7 @@ from time import sleep
 
 class Destroyer_game(object):
 
-    def __init__(self, window_size=(1024,800), game_speed=0, max_enemies=5, enemy_wait_range=(2, 4), font_size=22):
+    def __init__(self, window_size=(1024,800), game_speed=0, max_enemies=7, enemy_wait_range=(1, 3), font_size=22):
         self.__window_size = window_size
         self.__game_speed = game_speed
         self.__max_enemies = max_enemies
@@ -23,6 +23,7 @@ class Destroyer_game(object):
         pygame.init()
         pygame.font.init()
         points = Points()
+        texts = Texts()
         explosions = Explosions()
         destroyer = Destroyer(0,500, 500, window_size)
         bullets = Bullets((window_size[0]/2, window_size[1]/2), window_size)
@@ -30,8 +31,8 @@ class Destroyer_game(object):
         enemies = Enemies(enemy_wait_range, max_enemies, torpedos, game_speed, window_size, font_size)
         fades = Fades()
         enemies.add_enemy()
-        logic = Destroyer_logic(destroyer, enemies, bullets, torpedos, explosions, fades, points, window_size)
-        graphics = Destroyer_gfx(window_size, destroyer, enemies, bullets, torpedos, explosions, fades, points,
+        logic = Destroyer_logic(destroyer, enemies, bullets, torpedos, explosions, fades, texts, points, window_size)
+        graphics = Destroyer_gfx(window_size, destroyer, enemies, bullets, torpedos, explosions, fades, texts, points,
                                  font_size, "./media/background.png")
         graphics.draw()
 
@@ -44,9 +45,11 @@ class Destroyer_game(object):
             torpedos.move()
             bullets.move()
             explosions.change_frames()
+            fades.fade()
+            texts.move()
+
             if logic.check():
                 sys.exit()
-            fades.fade()
 
             keys = pygame.key.get_pressed()
 

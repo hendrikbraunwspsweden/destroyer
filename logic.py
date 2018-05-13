@@ -19,7 +19,7 @@ class Points(object):
 
 class Destroyer_logic(object):
 
-    def __init__(self, destroyer, enemies, bullets, torpedos, explosions, fades, points, window_size):
+    def __init__(self, destroyer, enemies, bullets, torpedos, explosions, fades, texts, points, window_size):
         self.__destroyer = destroyer
         self.__bullets = bullets
         self.__enemies = enemies
@@ -28,6 +28,7 @@ class Destroyer_logic(object):
         self.__torpedos = torpedos
         self.__explosions = explosions
         self.__points = points
+        self.__texts = texts
 
     def __check_bullets(self):
         bullet_remove_list = []
@@ -125,6 +126,8 @@ class Destroyer_logic(object):
                     self.__points.add_points(torpedo_list[e].get_params()["points"])
                     self.__explosions.add_explosion(Explosion(bullet_list[b].get_position(), 20))
                     self.__fades.add_fade(torpedo_list[e].get_image()[0], torpedo_list[e].get_image()[1], 0.5)
+                    self.__texts.add_text(bullet_list[b].get_position(), "+{}".
+                                          format(torpedo_list[e].get_params()["points"]))
         return bullet_remove_list, torpedo_remove_list
 
     def check(self):

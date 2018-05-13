@@ -344,8 +344,8 @@ class Torpedo_0(Enemy):
 
     param_dict = {
         "hp":100,
-        "min_speed":60,
-        "max_speed":60,
+        "min_speed":80,
+        "max_speed":80,
         "game_speed_multiplier":0.1,
         "min_dist":100,
         "has_torpedo":False,
