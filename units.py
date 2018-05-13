@@ -1,3 +1,19 @@
+########################################################################################################################
+# Destroyer - a small boat shooter game.                                                                               #
+# Copyright (C) 2018 by Hendrik Braun                                                                                  #
+#                                                                                                                      #
+# This program is free software: you can redistribute it and/or modify it under the terms of the                       #
+# GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or         #
+# (at your option) any later version.                                                                                  #
+#                                                                                                                      #
+# This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied   #
+# warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more        #
+# details.                                                                                                             #
+#                                                                                                                      #
+# You should have received a copy of the GNU General Public License along with this program.                           #
+# If not, see <http://www.gnu.org/licenses/>.                                                                          #
+########################################################################################################################
+
 from math import sin, cos, radians
 import pygame
 import datetime
@@ -309,8 +325,8 @@ class Torpedoboat(Enemy):
 
     param_dict = {
         "hp":100,
-        "min_speed":150,
-        "max_speed":200,
+        "min_speed":120,
+        "max_speed":150,
         "game_speed_multiplier":0.1,
         "min_dist":100,
         "has_torpedo":True,
@@ -461,4 +477,5 @@ class Bullet(object):
 
     def get_power(self):
         return self.__power
+
 

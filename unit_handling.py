@@ -1,9 +1,25 @@
+########################################################################################################################
+# Destroyer - a small boat shooter game.                                                                               #
+# Copyright (C) 2018 by Hendrik Braun                                                                                  #
+#                                                                                                                      #
+# This program is free software: you can redistribute it and/or modify it under the terms of the                       #
+# GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or         #
+# (at your option) any later version.                                                                                  #
+#                                                                                                                      #
+# This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied   #
+# warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more        #
+# details.                                                                                                             #
+#                                                                                                                      #
+# You should have received a copy of the GNU General Public License along with this program.                           #
+# If not, see <http://www.gnu.org/licenses/>.                                                                          #
+########################################################################################################################
+
 from units import *
 
 class Enemies():
 
     def __init__(self, wait_time_range, max_enemies, torpedos, game_speed, window_size, top_distance,
-                 ship_ratios=[(1, 20), (20, 100)]):
+                 ship_ratios=[(1, 20), (20, 100)], max_torpedos=2):
         ################################################################################################################
         # Ship_ratios is specified of number ranges between 1 and 100 for the different ship types. If ship type 1 is  #
         # to have a 70% chance of appearing and it is first in the list, then the range should be defined as (1,70)    #
@@ -21,6 +37,7 @@ class Enemies():
         self.__torpedos = torpedos
         self.__game_speed = game_speed
         self.__top_distance = top_distance
+        self.__max_torpedos = max_torpedos
 
     def add_enemy(self):
 
@@ -100,32 +117,38 @@ class Enemies():
                 if e.get_direction() == 1:
                     center_point = e.get_center_point()
                     if center_point[0] > self.__window_size[0]/2:
-                        if center_point[1] < self.__window_size[1]/2:
-                            direction = 2
+                        if self.__torpedos.count() >= self.__max_torpedos:
+                            e.set_torpedo_shot()
                         else:
-                            direction = 0
-                        if e.get_params()["torpedo_type"] == 0:
-                            self.__torpedos.add_torpedo(Torpedo_0(Torpedo_0.get_params()["min_speed"],
-                                                                  center_point,direction))
-                        if e.get_params()["torpedo_type"] == 1:
-                            self.__torpedos.add_torpedo(Torpedo_1(Torpedo_1.get_params()["min_speed"],
-                                                                  center_point,direction))
-                        e.set_torpedo_shot()
+                            if center_point[1] < self.__window_size[1]/2:
+                                direction = 2
+                            else:
+                                direction = 0
+                            if e.get_params()["torpedo_type"] == 0:
+                                self.__torpedos.add_torpedo(Torpedo_0(Torpedo_0.get_params()["min_speed"],
+                                                                      center_point,direction))
+                            if e.get_params()["torpedo_type"] == 1:
+                                self.__torpedos.add_torpedo(Torpedo_1(Torpedo_1.get_params()["min_speed"],
+                                                                      center_point,direction))
+                            e.set_torpedo_shot()
 
                 if e.get_direction() == 3:
                     center_point = e.get_center_point()
                     if center_point[0] < self.__window_size[0]/2:
-                        if center_point[1] < self.__window_size[1]/2:
-                            direction = 2
+                        if self.__torpedos.count() >= self.__max_torpedos:
+                            e.set_torpedo_shot()
                         else:
-                            direction = 0
-                        if e.get_params()["torpedo_type"] == 0:
-                            self.__torpedos.add_torpedo(Torpedo_0(Torpedo_0.get_params()["min_speed"],
-                                                                  center_point,direction))
-                        if e.get_params()["torpedo_type"] == 1:
-                            self.__torpedos.add_torpedo(Torpedo_1(Torpedo_1.get_params()["min_speed"],
-                                                                  center_point,direction))
-                        e.set_torpedo_shot()
+                            if center_point[1] < self.__window_size[1]/2:
+                                direction = 2
+                            else:
+                                direction = 0
+                            if e.get_params()["torpedo_type"] == 0:
+                                self.__torpedos.add_torpedo(Torpedo_0(Torpedo_0.get_params()["min_speed"],
+                                                                      center_point,direction))
+                            if e.get_params()["torpedo_type"] == 1:
+                                self.__torpedos.add_torpedo(Torpedo_1(Torpedo_1.get_params()["min_speed"],
+                                                                      center_point,direction))
+                            e.set_torpedo_shot()
 
 
     def get_enemies(self):
@@ -164,6 +187,9 @@ class Torpedos(object):
                 if not e in indices:
                     new_list.append(self.__torpedo_list[e])
             self.__torpedo_list = new_list
+
+    def count(self):
+        return len(self.__torpedo_list)
 
 
 class Bullets(object):

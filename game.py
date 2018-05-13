@@ -1,3 +1,20 @@
+########################################################################################################################
+# Destroyer - a small boat shooter game.                                                                               #
+# Copyright (C) 2018 by Hendrik Braun                                                                                  #
+#                                                                                                                      #
+# This program is free software: you can redistribute it and/or modify it under the terms of the                       #
+# GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or         #
+# (at your option) any later version.                                                                                  #
+#                                                                                                                      #
+# This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied   #
+# warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more        #
+# details.                                                                                                             #
+#                                                                                                                      #
+# You should have received a copy of the GNU General Public License along with this program.                           #
+# If not, see <http://www.gnu.org/licenses/>.                                                                          #
+########################################################################################################################
+
+
 import pygame
 import sys
 from units import *
@@ -8,7 +25,7 @@ from time import sleep
 
 class Destroyer_game(object):
 
-    def __init__(self, window_size=(1024,800), game_speed=0, max_enemies=7, enemy_wait_range=(1, 3), font_size=22):
+    def __init__(self, window_size=(1024,800), game_speed=0, max_enemies=7, enemy_wait_range=(1, 3), font_size=16):
         self.__window_size = window_size
         self.__game_speed = game_speed
         self.__max_enemies = max_enemies

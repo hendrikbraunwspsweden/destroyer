@@ -1,3 +1,20 @@
+########################################################################################################################
+# Destroyer - a small boat shooter game.                                                                               #
+# Copyright (C) 2018 by Hendrik Braun                                                                                  #
+#                                                                                                                      #
+# This program is free software: you can redistribute it and/or modify it under the terms of the                       #
+# GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or         #
+# (at your option) any later version.                                                                                  #
+#                                                                                                                      #
+# This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied   #
+# warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more        #
+# details.                                                                                                             #
+#                                                                                                                      #
+# You should have received a copy of the GNU General Public License along with this program.                           #
+# If not, see <http://www.gnu.org/licenses/>.                                                                          #
+########################################################################################################################
+
+
 import pygame
 import datetime
 
@@ -60,31 +77,34 @@ class Text_fx(object):
         self._text = text
         self._time = time
         self._movement = movement
-        self._alpha_steps = 255/self._time
-        self._steps = self._movement/self._time
+
+        self._alpha_steps = 255.0/self._time
+        self._steps = self._movement/float(self._time)
+        self._origin = origin
         self._old_time = datetime.datetime.now()
-        self._total_time = 0
+        self._time_delta = 0
         self._alpha = 255
         self._color = (0,0,0)
         self._rect = None
 
         if not positive:
-            self._color = (255,0,0)
+            self._color = (190,28,28)
 
-        myfont = pygame.font.SysFont('Comic Sans MS', 10)
+        myfont = pygame.font.SysFont('Arial', 16)
         self._image = myfont.render(self._text, False, self._color)
-        rect = self._image.get_rect()
-        self._position = (origin[0] - (rect[2]/2), origin[1] - (rect[3]/2))
-        self._rect = (self._position[0], self._position[1], rect[2], rect[3])
+        self._size_x, self._size_y = self._image.get_rect()[2], self._image.get_rect()[3]
+        self._position = (self._origin[0] - (self._size_x/2), self._origin[1] - (self._size_y/2))
+        self._rect = (self._position[0], self._position[1], self._size_x, self._size_y)
 
     def move(self):
         if self._alpha < 0:
             return -1
         else:
             new_time = datetime.datetime.now()
-            self._total_time += (new_time - self._old_time).total_seconds()
-            self._alpha = 255 - self._alpha_steps * self._total_time
-            self._position = self._position[0], round(self._position[1]-self._steps*self._total_time,0)
+            self._time_delta += (new_time - self._old_time).total_seconds() * 1000
+            self._alpha = 255 - self._alpha_steps * self._time_delta
+            self._position = (self._position[0], round(self._origin[1] - self._steps * self._time_delta, 0))
+            self._rect = pygame.Rect(self._position[0], self._position[1], self._size_x, self._size_y)
         self._old_time = new_time
         return 0
 
@@ -99,8 +119,8 @@ class Texts(object):
     def __init__(self):
         self.__text_list = []
 
-    def add_text(self, origin, text):
-        self.__text_list.append(Text_fx(origin, text, 0.6, 60))
+    def add_text(self, origin, text, positive=True):
+        self.__text_list.append(Text_fx(origin, text, 500, 80, positive=positive))
 
     def move(self):
         new_texts = []
@@ -189,7 +209,7 @@ class Destroyer_gfx(object):
         self.make_background()
 
     def __render_hud(self):
-        myfont = pygame.font.SysFont('Comic Sans MS', self.__font_size)
+        myfont = pygame.font.SysFont('Arial', self.__font_size)
         rect = pygame.Rect(0,0,self.__window_size[0],self.__font_size)
         pygame.draw.rect(self.__screen, (150,150,150), rect, 0)
 
