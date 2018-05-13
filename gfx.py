@@ -192,8 +192,8 @@ class Explosions(object):
 
 class Destroyer_gfx(object):
 
-    def __init__(self, window_size, destroyer, enemies, bullets, torpedos, explosions, fades, texts, points, font_size,
-                 bg_image):
+    def __init__(self, window_size, destroyer, enemies, bullets, torpedos, explosions, fades, texts, points, crates,
+                 font_size, bg_image):
         self.__destroyer = destroyer
         self.__enemies = enemies
         self.__bullets = bullets
@@ -206,6 +206,7 @@ class Destroyer_gfx(object):
         self.__points = points
         self.__texts = texts
         self.__font_size = font_size
+        self.__crates = crates
         self.make_background()
 
     def __render_hud(self):
@@ -235,6 +236,9 @@ class Destroyer_gfx(object):
 
         for b in self.__bullets.get_bullets():
             self.__screen.blit(b.get_image()[0], b.get_image()[1])
+
+        for c in self.__crates.get_crates():
+            self.__screen.blit(c.get_image()[0], c.get_image()[1])
 
         for f in self.__fades.get_fades():
             blit_alpha(self.__screen, f.get_image()[0], f.get_image()[1], f.get_alpha())

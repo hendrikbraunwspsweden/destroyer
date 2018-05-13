@@ -144,6 +144,12 @@ class Destroyer(object):
         else:
             return False
 
+    def increase_hp(self, hp):
+        if self.__hp + hp > self.__max_hp:
+            self.__hp = self.__max_hp
+        else:
+            self.__hp += hp
+
     def get_hp(self):
         return self.__hp
 
@@ -194,8 +200,8 @@ class Enemy(object):
         self._torpedo_shot = False
 
     def get_rect(self):
-        rect = self._position[0], self._position[1], self._position[0] + self._rect[2], self._position[1] + \
-               self._rect[3]
+        rect = pygame.Rect(self._position[0], self._position[1], self._position[0] + self._rect[2], self._position[1] + \
+               self._rect[3])
         return rect
 
     def get_direction(self):
@@ -478,4 +484,37 @@ class Bullet(object):
     def get_power(self):
         return self.__power
 
+class Crate(object):
+    def __init__(self, origin, return_points, crate_type, effect_points=100):
+        self._origin = origin
+        self._return_points = return_points
+        self._image = pygame.image.load("./media/crate.png")
+        self._rect = pygame.Rect(origin[0], origin[1], self._image.get_rect()[2], self._image.get_rect()[3])
+        self._type = crate_type
+        self._create_time = datetime.datetime.now()
+        self._effect_points = effect_points
+
+    def get_image(self):
+        return self._image, self._rect
+
+    def get_type(self):
+        return self._type
+
+    def get_age(self):
+        return (datetime.datetime.now() -  self._create_time).total_seconds()
+
+    def get_rect(self):
+        return self._rect
+
+    def get_points(self):
+        return self._return_points
+
+    def get_effect_points(self):
+        return self._effect_points
+
+    @classmethod
+    def get_size(self):
+        image = pygame.image.load("./media/crate.png")
+        rect = image.get_rect()
+        return rect[2], rect[3]
 

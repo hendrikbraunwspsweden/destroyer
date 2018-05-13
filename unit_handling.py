@@ -18,7 +18,7 @@ from units import *
 
 class Enemies():
 
-    def __init__(self, wait_time_range, max_enemies, torpedos, game_speed, window_size, top_distance,
+    def __init__(self, wait_time_range, max_enemies, torpedos, crates, game_speed, window_size, top_distance,
                  ship_ratios=[(1, 20), (20, 100)], max_torpedos=2):
         ################################################################################################################
         # Ship_ratios is specified of number ranges between 1 and 100 for the different ship types. If ship type 1 is  #
@@ -35,6 +35,7 @@ class Enemies():
         self.__window_size = window_size
         self.__ship_ratios = ship_ratios
         self.__torpedos = torpedos
+        self.__crates = crates
         self.__game_speed = game_speed
         self.__top_distance = top_distance
         self.__max_torpedos = max_torpedos
@@ -77,6 +78,7 @@ class Enemies():
                     y = randrange(self.__top_distance + 10, self.__window_size[1]/2-param_dict["min_dist"])
                 if y_rand == 1:
                     y = randrange(self.__window_size[1]/2+param_dict["min_dist"], self.__window_size[1]-10)
+
                 if not check_y_position(y):
                     good_y = True
 
@@ -221,3 +223,78 @@ class Bullets(object):
                 if not b in indices:
                     new_list.append(self.__bullet_list[b])
             self.__bullet_list = new_list
+
+class Crates(object):
+    def __init__(self, window_size, y_margin, destroyer, wait_range=(20,30), timeout=8, max_crates=2):
+        self._window_size = window_size
+        self._wait_range = wait_range
+        self._max_crates = max_crates
+        self._y_margin = y_margin
+        self._destroyer = destroyer
+        print(type(destroyer))
+        self._enemies = None
+        self._crates_list = []
+        self._old_time = datetime.datetime.now()
+        self._pause = randrange(wait_range[0], wait_range[1], 1)
+        self._timeout = timeout
+        self._crate_type = None
+
+    def make_crate(self):
+        ################################################################################################################
+        # TODO: Randomize crate types                                                                                  #
+        ################################################################################################################
+        new_time = datetime.datetime.now()
+        if (new_time-self._old_time).total_seconds() > self._pause:
+            self._crate_type = randrange(0,1,1)
+            good_pos = False
+            enemies = self._enemies.get_enemies()
+            destroyer = self._destroyer.get_image()
+            crate_size = Crate.get_size()
+
+            while not good_pos:
+                print("makeing crates")
+                good_pos_int = 0
+                x = randrange(0,self._window_size[0], 1)
+                y = randrange(self._y_margin, self._window_size[1] - 30, 1)
+
+                for e in enemies:
+                    #rect = pygame.Rect(0, e.get_rect()[1], self._window_size[0], e.get_rect()[3])
+                    if e.get_rect().colliderect(pygame.Rect(x,y,crate_size[0], crate_size[1])):
+                        good_pos_int += 1
+
+                if destroyer[1].colliderect(pygame.Rect(x,y,crate_size[0], crate_size[1])):
+                    good_pos_int += 1
+
+                if good_pos_int == 0:
+                    good_pos = True
+
+            self._crates_list.append(Crate((x,y),100, 0, 100))
+            self._pause = randrange(self._wait_range[0], self._wait_range[1], 1)
+            self._old_time = new_time
+
+    def get_crates(self):
+        return self._crates_list
+
+    def remove_crates(self, indices):
+        if len(indices)>0:
+            new_list = []
+            for b in range(len(self._crates_list)):
+                if not b in indices:
+                    new_list.append(self._crates_list[b])
+            self._crates_list = new_list
+
+    def check(self):
+        remove_list = []
+        for c in range(len(self._crates_list)):
+            if self._crates_list[c].get_age() > self._timeout:
+                remove_list.append(c)
+        self.remove_crates(remove_list)
+
+    def set_enemies(self, enemies):
+        ################################################################################################################
+        # The enemies object for the crates class has to be set after initialization due to a circular reference, e.g. #
+        # that the crates class uses the enemy class and the enemy class uses the crates class. Initialize the crates  #
+        # class first, hand it over to the instance of the enemy class and then set the enemies instance in the crates #
+        # instance using this method.                                                                                  #
+        ################################################################################################################
+        self._enemies = enemies
