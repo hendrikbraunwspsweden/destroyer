@@ -105,29 +105,29 @@ class Destroyer_logic(object):
 
     def __check_torpedos(self):
         torpedos_remove_list = []
-        torpedos = self.__torpedos.get_torpedos()
+        torpedo_list = self.__torpedos.get_torpedos()
         destroyer_destroyed = False
         for i in range(len(self.__torpedos.get_torpedos())):
-            rect = torpedos[i].get_rect()
+            rect = torpedo_list[i].get_rect()
 
-            if torpedos[i].get_image()[1].colliderect(self.__destroyer.get_image()[1]):
+            if torpedo_list[i].get_image()[1].colliderect(self.__destroyer.get_image()[1]):
                 torpedos_remove_list.append(i)
-                self.__explosions.add_explosion(Explosion(torpedos[i].get_position(), 20))
-                self.__texts.add_text(torpedos[i].get_position(), "-{}".
-                                      format(torpedos[i].get_params()["points"]), positive = False)
+                self.__explosions.add_explosion(Explosion(torpedo_list[i].get_position(), 20))
+                self.__texts.add_text(torpedo_list[i].get_position(), "-{}".
+                                      format(torpedo_list[i].get_params()["points"]), positive = False)
                 if self.__destroyer.reduce_hp(self.__torpedos.get_torpedos()[i].get_damage()):
                     destroyer_destroyed = True
 
-            elif torpedos[i].get_direction() == 0:
+            elif torpedo_list[i].get_direction() == 0:
                 if rect[1] <= 0:
                     torpedos_remove_list.append(i)
-            elif torpedos[i].get_direction() == 1:
+            elif torpedo_list[i].get_direction() == 1:
                 if rect[0] >= self.__window_size[0]:
                     torpedos_remove_list.append(i)
-            elif torpedos[i].get_direction() == 2:
+            elif torpedo_list[i].get_direction() == 2:
                 if rect[1] > self.__window_size:
                     torpedos_remove_list.append(i)
-            elif torpedos[i].get_direction() == 3:
+            elif torpedo_list[i].get_direction() == 3:
                 if rect[2] <= 0:
                     torpedos_remove_list.append(i)
         return torpedos_remove_list, destroyer_destroyed
@@ -177,9 +177,11 @@ class Destroyer_logic(object):
 
     def __check_enemies_crates(self):
         crates_remove_list = []
+        crate_list = self.__crates.get_crates()
+        enemies_list = self.__enemies.get_enemies()
         for e in range(len(self.__enemies.get_enemies())):
-            for c in range(len(self.__crates.get_crates())):
-                if self.__enemies.get_enemies()[e].get_rect().colliderect(self.__crates.get_crates()[c].get_rect()):
+            for c in range(len(crate_list)):
+                if enemies_list[e].get_rect().colliderect(crate_list[c].get_rect()):
                     crates_remove_list.append(c)
         return crates_remove_list
 

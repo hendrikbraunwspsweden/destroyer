@@ -74,14 +74,16 @@ class Destroyer(object):
             self.__pipe_length = 30
 
             self.__image = pygame.image.load("./media/warship.png")
-            self.__image_size = self.__image.get_rect()[2], self.__image.get_rect()[3]
+            rect = self.__image.get_rect()
+            self.__image_size = rect[2], rect[3]
 
             self.__rect = pygame.Rect(self.__window_size[0]/2 - self.__image_size[0]/2,
                                       self.__window_size[1]/2 - self.__image_size[1]/2,
                                       self.__image_size[0], self.__image_size[1])
 
             self.__tower_image = pygame.image.load("./media/tower1.png")
-            self.__tower_size = self.__tower_image.get_rect()[2], self.__tower_image.get_rect()[3]
+            rect = self.__tower_image.get_rect()
+            self.__tower_size = rect[2], rect[3]
 
             self.__tower_rect = pygame.Rect(self.__window_size[0]/2 - self.__tower_size[0]/2,
                                             self.__window_size[1]/2 - self.__tower_size[1]/2,
@@ -318,7 +320,9 @@ class Submarine(Enemy):
         self._image = pygame.image.load("./media/submarine.png")
         if self._direction == 1:
             self._image = pygame.transform.rotate(self._image, 180)
-        self._image_size = self._image.get_rect()[2], self._image.get_rect()[3]
+
+        rect = self._image.get_rect()
+        self._image_size = rect[2], rect[3]
         self._rect = pygame.Rect(self._position[0], self._position[1]-self._image_size[1]/2,
                                  self._image_size[0], self._image_size[1])
 
@@ -353,7 +357,8 @@ class Torpedoboat(Enemy):
         self._image = pygame.image.load("./media/torpedoboat.png")
         if self._direction == 1:
             self._image = pygame.transform.rotate(self._image, 180)
-        self._image_size = self._image.get_rect()[2], self._image.get_rect()[3]
+        rect = self._image.get_rect()
+        self._image_size = rect[2], rect[3]
         self._rect = pygame.Rect(self._position[0], self._position[1]-self._image_size[1]/2,
                                  self._image_size[0], self._image_size[1])
 
@@ -389,7 +394,8 @@ class Torpedo_0(Enemy):
         self._image = pygame.image.load("./media/torpedo1.png")
         if self._direction == 0:
             self._image = pygame.transform.rotate(self._image, 180)
-        self._image_size = self._image.get_rect()[2], self._image.get_rect()[3]
+        rect = self._image.get_rect()
+        self._image_size = rect[2], rect[3]
         self._rect = pygame.Rect(self._position[0], self._position[1]-self._image_size[1]/2,
                                  self._image_size[0], self._image_size[1])
 
@@ -428,7 +434,8 @@ class Torpedo_1(Enemy):
         self._image = pygame.image.load("./media/torpedo1.png")
         if self._direction == 0:
             self._image = pygame.transform.rotate(self._image, 180)
-        self._image_size = self._image.get_rect()[2], self._image.get_rect()[3]
+        rect = self._image.get_rect()
+        self._image_size = rect[2], rect[3]
         self._rect = pygame.Rect(self._position[0], self._position[1]-self._image_size[1]/2,
                                  self._image_size[0], self._image_size[1])
 
@@ -456,7 +463,8 @@ class Bullet(object):
             self.__image = pygame.image.load("./media/bullet1.png")
 
         self.__image = pygame.transform.rotate(self.__image, - self.__direction)
-        self.__image_size = self.__image.get_rect()[2], self.__image.get_rect()[3]
+        rect = self.__image.get_rect()
+        self.__image_size = rect[2], rect[3]
 
         self.__rect = pygame.Rect(self.__position[0]-self.__image_size[0]/2, self.__position[1] - self.__image_size[1]/2,
                                   self.__image_size[0], self.__image_size[1])

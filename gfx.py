@@ -92,7 +92,8 @@ class Text_fx(object):
 
         myfont = pygame.font.SysFont('Arial', 16)
         self._image = myfont.render(self._text, False, self._color)
-        self._size_x, self._size_y = self._image.get_rect()[2], self._image.get_rect()[3]
+        rect = self._image.get_rect()
+        self._size_x, self._size_y = rect[2], rect[3]
         self._position = (self._origin[0] - (self._size_x/2), self._origin[1] - (self._size_y/2))
         self._rect = (self._position[0], self._position[1], self._size_x, self._size_y)
 
@@ -120,7 +121,7 @@ class Texts(object):
         self.__text_list = []
 
     def add_text(self, origin, text, positive=True):
-        self.__text_list.append(Text_fx(origin, text, 500, 80, positive=positive))
+        self.__text_list.append(Text_fx(origin, text, 1000, 80, positive=positive))
 
     def move(self):
         new_texts = []

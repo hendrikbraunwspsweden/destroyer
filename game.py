@@ -25,9 +25,9 @@ from time import sleep
 
 class Destroyer_game(object):
 
-    def __init__(self, window_size=(1024,800), game_speed=0, max_enemies=5, enemy_wait_range=(5, 8), font_size=16):
+    def __init__(self, window_size=(1024,800), game_level=0, max_enemies=5, enemy_wait_range=(3, 7), font_size=16):
         self.__window_size = window_size
-        self.__game_speed = game_speed
+        self.__game_level = game_level
         self.__max_enemies = max_enemies
         self.__enemies = []
         self.__bullets = []
@@ -35,6 +35,7 @@ class Destroyer_game(object):
         self.__max_enemies = max_enemies
         self.__window_size = window_size
         self.__font_size = font_size
+        self.__total_enemies = 0
 
 
         pygame.init()
@@ -68,6 +69,9 @@ class Destroyer_game(object):
             texts.move()
             crates.make_crate()
             crates.check()
+
+            self.__total_enemies = enemies.get_total_enemies()
+            print(self.__total_enemies)
 
             if logic.check():
                 sys.exit()

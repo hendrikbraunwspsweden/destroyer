@@ -39,14 +39,16 @@ class Enemies():
         self.__game_speed = game_speed
         self.__top_distance = top_distance
         self.__max_torpedos = max_torpedos
+        self.__total_enemies = 0
 
     def add_enemy(self):
 
         def check_y_position(y):
             #Method to check if any other enemy is on the same position or within a frame of 80 pixels
 
-            for e in self.get_enemies():
-                if e.get_rect()[1] - 40 < y < e.get_rect()[3] + 40:
+            for e in self.__enemy_list:
+                rect = e.get_rect()
+                if rect[1] - 40 < y < rect[3] + 40:
                     return True
             return False
 
@@ -99,13 +101,15 @@ class Enemies():
 
         if len(self.__enemy_list) == 0:
             self.__enemy_list.append(make_ship())
+            self.__total_enemies += 1
             self.__next_enemy_in = randrange(self.__wait_time_range[0], self.__wait_time_range[1], 1)
             self.__old_time = datetime.datetime.now()
         else:
-            if len(self.get_enemies()) < self.__max_enemies:
+            if len(self.__enemy_list) < self.__max_enemies:
                 new_time = datetime.datetime.now()
                 if (new_time - self.__old_time).total_seconds() > self.__next_enemy_in:
                     self.__enemy_list.append(make_ship())
+                    self.__total_enemies += 1
                     self.__next_enemy_in = randrange(self.__wait_time_range[0], self.__wait_time_range[1], 1)
                     self.__old_time = new_time
 
@@ -126,10 +130,12 @@ class Enemies():
                                 direction = 2
                             else:
                                 direction = 0
-                            if e.get_params()["torpedo_type"] == 0:
+
+                            torpedo_type = e.get_params()["torpedo_type"]
+                            if torpedo_type == 0:
                                 self.__torpedos.add_torpedo(Torpedo_0(Torpedo_0.get_params()["min_speed"],
                                                                       center_point,direction))
-                            if e.get_params()["torpedo_type"] == 1:
+                            if torpedo_type == 1:
                                 self.__torpedos.add_torpedo(Torpedo_1(Torpedo_1.get_params()["min_speed"],
                                                                       center_point,direction))
                             e.set_torpedo_shot()
@@ -144,10 +150,12 @@ class Enemies():
                                 direction = 2
                             else:
                                 direction = 0
-                            if e.get_params()["torpedo_type"] == 0:
+
+                            torpedo_type = e.get_params()["torpedo_type"]
+                            if torpedo_type == 0:
                                 self.__torpedos.add_torpedo(Torpedo_0(Torpedo_0.get_params()["min_speed"],
                                                                       center_point,direction))
-                            if e.get_params()["torpedo_type"] == 1:
+                            if torpedo_type == 1:
                                 self.__torpedos.add_torpedo(Torpedo_1(Torpedo_1.get_params()["min_speed"],
                                                                       center_point,direction))
                             e.set_torpedo_shot()
@@ -166,6 +174,9 @@ class Enemies():
 
     def set_max_enemies(self, count):
         self.__max_enemies = count
+
+    def get_total_enemies(self):
+        return self.__total_enemies
 
 
 class Torpedos(object):
@@ -231,7 +242,6 @@ class Crates(object):
         self._max_crates = max_crates
         self._y_margin = y_margin
         self._destroyer = destroyer
-        print(type(destroyer))
         self._enemies = None
         self._crates_list = []
         self._old_time = datetime.datetime.now()
