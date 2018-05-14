@@ -20,6 +20,9 @@ import pygame
 
 class Points(object):
     def __init__(self):
+        ################################################################################################################
+        # Class for handling game points.                                                                              #
+        ################################################################################################################
         self.__points = 0
 
     def add_points(self, points):
@@ -37,6 +40,20 @@ class Points(object):
 class Destroyer_logic(object):
 
     def __init__(self, destroyer, enemies, bullets, torpedos, explosions, fades, texts, points, crates, window_size):
+        ################################################################################################################
+        # This is where all the game logic magic happens. Takes the instances of the different game objects and checks #
+        # for e.g. collisions. Defines what happens when collisions are detected.                                      #
+        # destroyer (Destroyer)     : game instance of destroyer class                                                 #
+        # enemies (Enemies)         : game instance of enemies class                                                   #
+        # bullets (Bullets)         : game instance of bullets class                                                   #
+        # torpedos (Torpedos)       : game instance of torpedos class                                                  #
+        # explosions (Explosions)   : game instance of Explosions class                                                #
+        # fades (Fades)             : game instance of Fades class                                                     #
+        # texts (Texts)             : game instance of Texts class                                                     #
+        # points (Points)           : game instance of points class                                                    #
+        # crates (Crates)           : game instance of crates class                                                    #
+        # window_size (list of int) : window size as x(int), y(int)                                                    #
+        ################################################################################################################
         self.__destroyer = destroyer
         self.__bullets = bullets
         self.__enemies = enemies
@@ -49,15 +66,24 @@ class Destroyer_logic(object):
         self.__crates = crates
 
     def __check_bullets(self):
+        ################################################################################################################
+        # Checks if any of the bullets are outside the game window. Returns a list of indices for the bullets that are #
+        # to be removed.                                                                                               #
+        ################################################################################################################
         bullet_remove_list = []
         bullet_list = self.__bullets.get_bullets()
 
         for i in range(len(bullet_list)):
-            if not (self.__window_size[0] >= bullet_list[i].get_position()[0] >= 0) or not (self.__window_size[1] >= bullet_list[i].get_position()[1] >= 0):
+            if not (self.__window_size[0] >= bullet_list[i].get_position()[0] >= 0) or \
+                    not (self.__window_size[1] >= bullet_list[i].get_position()[1] >= 0):
                 bullet_remove_list.append(i)
         return bullet_remove_list
 
     def __check_bullets_enemies(self):
+        ################################################################################################################
+        # Checks for collisions between bullets and enemies and what happens in that case. Returns list of bullets and #
+        # enemies that are to be removed.                                                                              #
+        ################################################################################################################
         enemy_remove_list = []
         bullet_remove_list = []
         enemy_list = self.__enemies.get_enemies()
@@ -77,6 +103,9 @@ class Destroyer_logic(object):
         return bullet_remove_list, enemy_remove_list
 
     def __check_enemies(self):
+        ################################################################################################################
+        # Checks if any of the enemies are outside the game window. Returns a list of enemies that are to be removed   #
+        ################################################################################################################
         enemies_remove_list = []
         enemies = self.__enemies.get_enemies()
         for i in range(len(self.__enemies.get_enemies())):
@@ -104,6 +133,9 @@ class Destroyer_logic(object):
         return enemies_remove_list
 
     def __check_torpedos(self):
+        ################################################################################################################
+        # Checks if any of the torpedos are outside the game window. Returns a list of torpedos that are to be removed #
+        ################################################################################################################
         torpedos_remove_list = []
         torpedo_list = self.__torpedos.get_torpedos()
         destroyer_destroyed = False
@@ -133,6 +165,10 @@ class Destroyer_logic(object):
         return torpedos_remove_list, destroyer_destroyed
 
     def __check_bullets_torpedos(self):
+        ################################################################################################################
+        # Checks for collisions between bullets and torpedos and what happens in that case. Returns list of bullets    #
+        # torpedos that are to be removed.                                                                             #
+        ################################################################################################################
         torpedo_remove_list = []
         bullet_remove_list = []
         torpedo_list = self.__torpedos.get_torpedos()
@@ -152,8 +188,8 @@ class Destroyer_logic(object):
 
     def __check_bullets_crates(self):
         ################################################################################################################
-        # Checks if any of the bullets hits any of the crates. If so, the action depends on the type of the crate.     #
-        # Other actions, animations etc can be specified depending on the type of crate                                #
+        # Checks for collisions between bullets and crates and what happens in that case. Returns list of bullets and  #
+        # crates that are to be removed.                                                                               #
         ################################################################################################################
 
         bullet_remove_list = []
@@ -174,8 +210,11 @@ class Destroyer_logic(object):
                                               format(crate_list[c].get_effect_points()))
         return bullet_remove_list, crate_remove_list
 
-
     def __check_enemies_crates(self):
+        ################################################################################################################
+        # Checks for collisions between enemies and crates and what happens in that case. Returns list of crates that  #
+        # are to be removed.                                                                                           #
+        ################################################################################################################
         crates_remove_list = []
         crate_list = self.__crates.get_crates()
         enemies_list = self.__enemies.get_enemies()
@@ -186,6 +225,12 @@ class Destroyer_logic(object):
         return crates_remove_list
 
     def check(self):
+        ################################################################################################################
+        # Runs the collision check functions above. The returned lists containing the list indices of the objects that #
+        # are to be deleted are combined per object type. The lists are then "destilled" down to unique indices in     #
+        # order to prevent double entries leading to problems during removal. Calls the remove methods for each object #
+        # type with the "destilled" list as argument. Spawns a new enemy in case all enemies are gone.                 #
+        ################################################################################################################
 
         bullet_remove_list_1 = self.__check_bullets()
         bullet_remove_list_2, enemy_remove_list_1 = self.__check_bullets_enemies()

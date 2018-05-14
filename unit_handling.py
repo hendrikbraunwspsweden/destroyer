@@ -21,6 +21,19 @@ class Enemies():
     def __init__(self, wait_time_range, max_enemies, torpedos, crates, game_speed, window_size, top_distance,
                  ship_ratios=[(1, 20), (20, 100)], max_torpedos=2):
         ################################################################################################################
+        # Class for handling all enemy ship objects.                                                                   #
+        # wait_time_range (list of int)     : range of minimum wait time to maximum wait time for spawn of next enemy  #
+        # max_enemies (int)                 : maximum numbers of enemies at once on the screen                         #
+        # torpedos (Torpedos)               : game instance of Torpedos class                                          #
+        # crates (Crates)                   : game instance of Crates class                                            #
+        # game_speed (int)                  : game speed between 0 and n. Boat speed is adjusted by the game speed     #
+        #                                     multiplier defined in the class of the boat types                        #
+        # window_size (list of int)         : window size in x,y                                                       #
+        # top_distance (int)                : minimum y position for spwaning enemies in order to avoid HUD            #
+        # ship_ratios (list of ranges)      : see description below                                                    #
+        # max_torpedos (int)                : maximum number of torpedos on the screen at the same time                #
+        #                                                                                                              #
+        #                                                                                                              #
         # Ship_ratios is specified of number ranges between 1 and 100 for the different ship types. If ship type 1 is  #
         # to have a 70% chance of appearing and it is first in the list, then the range should be defined as (1,70)    #
         # and if ship type 2 then is supposed to have a 30% chance of appearing, the range has to be specified as      #
@@ -42,9 +55,16 @@ class Enemies():
         self.__total_enemies = 0
 
     def add_enemy(self):
+        ################################################################################################################
+        # Method for evaluating if an enemy is to be added, based on the actual number and the time passed since the   #
+        # last spawn.                                                                                                  #
+        ################################################################################################################
 
         def check_y_position(y):
-            #Method to check if any other enemy is on the same position or within a frame of 80 pixels
+            ############################################################################################################
+            # Method to check if any other enemy is on the same position or within a frame of 80 pixels. If so, the    #
+            # position is regarded as bad and a new ship will not be spawned within that range.                        #
+            ############################################################################################################
 
             for e in self.__enemy_list:
                 rect = e.get_rect()
@@ -114,10 +134,20 @@ class Enemies():
                     self.__old_time = new_time
 
     def move(self):
+        ################################################################################################################
+        # Move all ships.                                                                                              #
+        ################################################################################################################
         for e in self.__enemy_list:
             e.move(self.__game_speed)
 
     def shoot(self):
+        ################################################################################################################
+        # Method for making the existing ships shoot torpedos under defined cicumstances, being that they have are on  #
+        # or have passed the center of the screen, they are equipped with a torpedo (which is defined in the parameter #
+        # dictionary in the ship class) and there are less than the allowed maximum amount of torpedos on the screen at#
+        # this point in time. If there are more, the ship looses it's torpedo.                                         #
+        ################################################################################################################
+
         for e in self.__enemy_list:
             if e.has_torpedo() and not e.get_torpedo_shot():
                 if e.get_direction() == 1:
@@ -165,6 +195,11 @@ class Enemies():
         return self.__enemy_list
 
     def remove_enemies(self, indices):
+        ################################################################################################################
+        # Removes the enemies at given indices. Called from the Destroyer_logic class game instance.                   #
+        # indices (list of int) : indices of the enemies that are to be deleted.                                       #
+        ################################################################################################################
+
         if len(indices) > 0:
             new_list = []
             for e in range(len(self.__enemy_list)):
@@ -237,6 +272,18 @@ class Bullets(object):
 
 class Crates(object):
     def __init__(self, window_size, y_margin, destroyer, wait_range=(20,30), timeout=8, max_crates=2):
+        ################################################################################################################
+        # Class for handling crates in the game. Crates appear on randomized positions in the game at random time      #
+        # intervals.                                                                                                   #
+        # window_size (list of int) : game window size as x,y                                                          #
+        # y_margin (int)            : y margin for crate positions based for avoiding HUD                              #
+        # destroyer (Destroyer)     : Destroyer game instance                                                          #
+        # wait_range (range of int) : range of seconds between which the time delta for the next crate spawn is        #
+        #                             randomized.                                                                      #
+        # timeout (int)             : defines how long in seconds crates are in existence after spawning.              #
+        # max_crates (int)          : the maximum number of crates on the screen at the same point in time             #
+        ################################################################################################################
+
         self._window_size = window_size
         self._wait_range = wait_range
         self._max_crates = max_crates
