@@ -21,6 +21,10 @@ from math import floor
 from random import randrange
 
 def project_point(original_x, original_y, bearing, distance):
+    ####################################################################################################################
+    # Function for projecting an x,y position with a specified bearing and a specified distance. Returns the new       #
+    # position.                                                                                                        #
+    ####################################################################################################################
 
     if bearing >= 360:
         bearing = bearing -360
@@ -62,6 +66,13 @@ def project_point(original_x, original_y, bearing, distance):
 class Destroyer(object):
 
     def __init__(self, type, reload_time, hp, window_size):
+        ################################################################################################################
+        # Class for the players ship.                                                                                  #
+        # type (int)                : Destroyer type. So far only type 0 is implemented                                #
+        # reload_time (int)         : reload time between shots in ms                                                  #
+        # hp (int)                  : HP for the destroyer                                                             #
+        # window_size (list of int) : window size as x,y                                                               #
+        ################################################################################################################
         self.__tower_direction = 0
         self.__image = None
         self.__reload_time = None
@@ -159,20 +170,6 @@ class Destroyer(object):
         return self.__max_hp
 
 class Enemy(object):
-    ####################################################################################################################
-    # Base class for enemy objects. That can be ships as well as for example torpedos. The parameter dict _param_dict  #
-    # defines the general outline of how the attributes for each sub class are defined:                                #
-    # "strength" (int)                  : enemy strength points                                                        #
-    # "min_speed" (int)                 : minimum unit speed in px/sec                                                 #
-    # "max_speed" (int)                 : maximum unit speed int px/sec                                                #
-    # "game_speed_multiplier" (float)   : speed vector multiplication value. 0.1 means 10% faster per game level       #
-    # "min_dist" (int)                  : minumum distance from the unit to the destroyer's horizontal center line     #
-    # "has_torpedo" (bool)              : defines if the unit shoots torpedos                                          #
-    # "torpedo_type(int)                : torpedo type                                                                 #
-    # "torpedo_speed(int)               :torpedo speed in px/sec                                                       #
-    # "torpedo_chance(float)            : chance of shooting torpedo, between 0.0 and 1.0                              #
-    # "points (int)                     : points awarded to player when enemy is shot                                  #
-    ####################################################################################################################
 
     _param_dict = {
         "hp":None,
@@ -188,6 +185,30 @@ class Enemy(object):
     }
 
     def __init__(self, hp, px_per_second, origin, direction):
+        ################################################################################################################
+        # Base class for enemy objects. That can be ships as well as for example torpedos.                             #
+        # hp (int)              : HP of the enemy vessel                                                               #
+        # px_per_second (int)   : unit movement speed in pixels per second                                             #
+        # origin (list of int)  : origin as x,y                                                                        #
+        # direction (int)       : direction of the vessel, 0=north, 1=east, 2=south, 3=west                            #
+        #                                                                                                              #
+        # The enemies are initialized by the game instance of the Enemies class by randomizing the type of enemy to be #
+        # spawned, pull the parameter dictionary (param_dict) from that class, randomizing the starting position of    #
+        # the boat, the speed and if it has a torpedo. The randomized parameters are then used to initiate the         #
+        # instance of the enemy class.                                                                                 #
+        #                                                                                                              #
+        # The parameters in the param_dict dictionary are to be defined as followed:                                   #
+        # "strength" (int)                  : enemy strength points                                                    #
+        # "min_speed" (int)                 : minimum unit speed in px/sec                                             #
+        # "max_speed" (int)                 : maximum unit speed int px/sec                                            #
+        # "game_speed_multiplier" (float)   : speed vector multiplication value. 0.1 means 10% faster per game level   #
+        # "min_dist" (int)                  : minumum distance from the unit to the destroyer's horizontal center line #
+        # "has_torpedo" (bool)              : defines if the unit shoots torpedos                                      #
+        # "torpedo_type(int)                : torpedo type                                                             #
+        # "torpedo_speed(int)               :torpedo speed in px/sec                                                   #
+        # "torpedo_chance(float)            : chance of shooting torpedo, between 0.0 and 1.0                          #
+        # "points (int)                     : points awarded to player when enemy is shot                              #
+        ################################################################################################################
         self._hp = hp
         self._position = origin
         self._real_position = origin
@@ -216,6 +237,12 @@ class Enemy(object):
         return self._position[0] + self._image_size[0]/2, self._position[1] + self._image_size[1]/2
 
     def move(self, level=0):
+        ################################################################################################################
+        # Method to move the enemy vessel. The movement per cycle is calculated based on the time elapsed since the    #
+        # last cycle and the movement speed as pixels per seconds set in the parameter dictionary. The distance is     #
+        # also adjusted for the specified game speed multiplier based on the level parameter                           #
+        ################################################################################################################
+
         new_time = datetime.datetime.now()
         time_delta = new_time - self._old_time
         self._old_time = new_time
@@ -249,6 +276,11 @@ class Enemy(object):
         return self._image, self._rect
 
     def has_torpedo(self):
+        ################################################################################################################
+        # Method to check if the instance of the enemy vessel has a torpedo. When run for the first time, a torpedo    #
+        # might be attached based on the chance of the enemy boat being equipped with a torpedo specified in the       #
+        # parameter dictionary. When called afterwards, it returns if a torpedo is attached or not.                    #
+        ################################################################################################################
             if self._param_dict["has_torpedo"]:
                 if self._has_torpedo is None:
                     chance = self._param_dict["torpedo_chance"]*10
@@ -450,6 +482,15 @@ class Torpedo_1(Enemy):
 class Bullet(object):
 
     def __init__(self, type, power, origin, direction, px_per_second):
+        ################################################################################################################
+        # Base class for bullets.                                                                                      #
+        # type (int)            : bullet type                                                                          #
+        # power (int)           : damage done to the enemy on bullet impact                                            #
+        # origin (list of int)  : bullet origin as x,y. Usually the center of the game window                          #
+        # direction (int)       : direction of the bullet as bearing, between 0 and 360 (north)                        #
+        # px_per_second (int)   : bullet speed as pixels per second                                                    #
+        ################################################################################################################
+
         self.__type = type
         self.__power = power
         self.__position = list(origin)
@@ -470,6 +511,10 @@ class Bullet(object):
                                   self.__image_size[0], self.__image_size[1])
 
     def move(self):
+        ################################################################################################################
+        # Method for bullet movement. The movement distance is calculated by the elapsed time since the last call      #
+        # and the speed as defined at instance creation.                                                               #
+        ################################################################################################################
         new_time = datetime.datetime.now()
         time_delta = new_time - self.__old_time
         self.__old_time = new_time
@@ -494,6 +539,16 @@ class Bullet(object):
 
 class Crate(object):
     def __init__(self, origin, return_points, crate_type, effect_points=100):
+        ################################################################################################################
+        # Crate class. The instance is initialted from the Crates class game instance. The parameters are randomized   #
+        # and the position checked for collisions with other objects.                                                  #
+        # origin (list of int)  : origin as x,y                                                                        #
+        # return_points (int)   : points awarded to the player if the crate is destroyed                               #
+        # crate_type (int)      : the type of crate. Different types can potentially have different images etc. What   #
+        #                         happens when a crate of a type is shot is specified in the Destroyer_logic class     #
+        # effect_points (int)   : points for the effect that the destruction of the crate has. The effect is defined   #
+        #                       : in the Destroyer_logic class and can for example be health points.                   #
+        ################################################################################################################
         self._origin = origin
         self._return_points = return_points
         self._image = pygame.image.load("./media/crate.png")
@@ -509,6 +564,10 @@ class Crate(object):
         return self._type
 
     def get_age(self):
+        ################################################################################################################
+        # Returns the age of the crate in seconds. Used to check wether the instance of a crate has exceeded the       #
+        # best before date and is ready for the trash bin...                                                           #
+        ################################################################################################################
         return (datetime.datetime.now() -  self._create_time).total_seconds()
 
     def get_rect(self):

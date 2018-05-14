@@ -47,7 +47,7 @@ class Destroyer_game(object):
         bullets = Bullets((window_size[0]/2, window_size[1]/2), window_size)
         torpedos = Torpedos()
         crates = Crates(self.__window_size, self.__font_size + 20, destroyer)
-        enemies = Enemies(enemy_wait_range, max_enemies, torpedos, crates, game_speed, window_size, font_size)
+        enemies = Enemies(enemy_wait_range, max_enemies, torpedos, crates, game_level, window_size, font_size)
         crates.set_enemies(enemies)
         fades = Fades()
         enemies.add_enemy()
