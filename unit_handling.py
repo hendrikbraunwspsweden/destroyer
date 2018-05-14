@@ -298,6 +298,9 @@ class Crates(object):
 
     def make_crate(self):
         ################################################################################################################
+        # Checks if the time randomized during the last crate spawning event has elapsed. If that is the case, a new   #
+        # crate is created based on randomized values. The randomized values are checked against existing ship and the #
+        # destroyer positions. The values are randomized until no collision is found.                                  #
         # TODO: Randomize crate types                                                                                  #
         ################################################################################################################
         new_time = datetime.datetime.now()
