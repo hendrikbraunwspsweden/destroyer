@@ -26,6 +26,22 @@ from time import sleep
 class Destroyer_game(object):
 
     def __init__(self, window_size=(1024,800), game_level=0, max_enemies=5, enemy_wait_range=(3, 7), font_size=16):
+        """
+        Main class for the game creating and managing all game object class instances.
+
+        :param window_size      : window size as x,y
+        :param game_level       : game level
+        :param max_enemies      : maximum number of enemies on the screen at once
+        :param enemy_wait_range : range of spawn waiting times between enemies in seconds
+        :param font_size        : font size for HUD
+        :type window_size       : set
+        :type game_level        : set
+        :type max_enemies       : int
+        :type enemy_wait_range  : set
+        :type font_size         : int
+
+        :returns:
+        """
         self.__window_size = window_size
         self.__game_level = game_level
         self.__max_enemies = max_enemies

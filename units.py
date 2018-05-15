@@ -26,6 +26,17 @@ def project_point(original_x, original_y, bearing, distance):
     """
     Function for projecting an x,y position with a specified bearing and a specified distance. Returns the new
     position.
+
+    :param original_x   : x origin
+    :param original_y   : y origin
+    :param bearing      : bearing in degrees with 0/360 degrees as north
+    :param distance     : the distance in pixels the point is to be projektet
+    :type original_x    : int
+    :type original_y    : int
+    :type bearing       : int
+    :type distance      :int
+
+    :returns: list of integer
     """
 
     if bearing >= 360:
@@ -71,10 +82,16 @@ class Destroyer(object):
 
         """
         Class for the players ship.
-        type (int)                : Destroyer type. So far only type 0 is implemented
-        reload_time (int)         : reload time between shots in ms
-        hp (int)                  : HP for the destroyer
-        window_size (list of int) : window size as x,y
+        :param type         : Destroyer type. So far only 0 is implemented
+        :param reload_time  : reload time between shots in ms
+        :param hp           : HP for destroyer
+        :param window_size  : window size as x,y
+        :type type          : int
+        :type reload_time   : int
+        :type hp            : int
+        :type window_size   : list
+
+        :returns:
         """
 
         self.__tower_direction = 0
@@ -155,6 +172,10 @@ class Destroyer(object):
 
         """
         Reduced hp by a specified number and returns True if no hp left
+        :param hp   : reduce destroyer HP by hp points
+        :type hp    : int
+
+        :returns: boolean
         """
 
         self.__hp -= hp
@@ -194,10 +215,14 @@ class Enemy(object):
 
         """
         Base class for enemy objects. That can be ships as well as for example torpedos.
-        hp (int)              : HP of the enemy vessel
-        px_per_second (int)   : unit movement speed in pixels per second
-        origin (list of int)  : origin as x,y
-        direction (int)       : direction of the vessel, 0=north, 1=east, 2=south, 3=west
+        :param hp               : HP of the enemy vessel
+        :param px_per_second    : unit movement speed in pixels per second
+        :param origin           : origin as x,y
+        :param direction        : direction of the vessel, 0=north, 1=east, 2=south, 3=west
+        :type hp                : int
+        :type px_per_second     : int
+        :type origin            : set
+        :type direction         : int
 
         The enemies are initialized by the game instance of the Enemies class by randomizing the type of enemy to be
         spawned, pull the parameter dictionary (param_dict) from that class, randomizing the starting position of
@@ -215,6 +240,8 @@ class Enemy(object):
         "torpedo_speed(int)               :torpedo speed in px/sec
         "torpedo_chance(float)            : chance of shooting torpedo, between 0.0 and 1.0
         "points (int)                     : points awarded to player when enemy is shot
+
+        :returns:
         """
 
         self._hp = hp
@@ -250,6 +277,10 @@ class Enemy(object):
         Method to move the enemy vessel. The movement per cycle is calculated based on the time elapsed since the
         last cycle and the movement speed as pixels per seconds set in the parameter dictionary. The distance is
         also adjusted for the specified game speed multiplier based on the level parameter
+
+        :param level    : game level
+        :type level     : int
+
         """
 
         new_time = datetime.datetime.now()
@@ -291,7 +322,7 @@ class Enemy(object):
         might be attached based on the chance of the enemy boat being equipped with a torpedo specified in the
         parameter dictionary. When called afterwards, it returns if a torpedo is attached or not.
 
-        :return: boolean
+        :returns: boolean
         """
 
         if self._param_dict["has_torpedo"]:
@@ -323,6 +354,10 @@ class Enemy(object):
 
         """
         Reduced hp by a specified number and returns True if no hp left
+        :param hp   : hp
+        :type hp    : int
+
+        :returns: integer
         """
 
         self._hp -= hp
@@ -500,11 +535,18 @@ class Bullet(object):
 
         """
         Base class for bullets.
-        type (int)            : bullet type
-        power (int)           : damage done to the enemy on bullet impact
-        origin (list of int)  : bullet origin as x,y. Usually the center of the game window
-        direction (int)       : direction of the bullet as bearing, between 0 and 360 (north)
-        px_per_second (int)   : bullet speed as pixels per second
+        :param type         : bullet type
+        :param power        : damage done to the enemy on bullet impact
+        :param origin       : bullet origin as x,y. Usually the center of the game window
+        :param direction    : direction of the bullet as bearing, between 0 and 360 (north)
+        :param px_per_second: bullet speed as pixels per second
+        :type type          : int
+        :type power         : int
+        :type origin        : set
+        :type direction     : int
+        :type px_per_second : int
+
+        :returns:
         """
 
         self.__type = type
@@ -531,6 +573,8 @@ class Bullet(object):
         """
         Method for bullet movement. The movement distance is calculated by the elapsed time since the last call
         and the speed as defined at instance creation.
+
+        :returns:
         """
 
         new_time = datetime.datetime.now()
@@ -561,12 +605,19 @@ class Crate(object):
         """
         Crate class. The instance is initialted from the Crates class game instance. The parameters are randomized
         and the position checked for collisions with other objects.
-        origin (list of int)  : origin as x,y
-        return_points (int)   : points awarded to the player if the crate is destroyed
-        crate_type (int)      : the type of crate. Different types can potentially have different images etc. What
-                                happens when a crate of a type is shot is specified in the Destroyer_logic class
-        effect_points (int)   : points for the effect that the destruction of the crate has. The effect is defined
-                              : in the Destroyer_logic class and can for example be health points.
+
+        :param origin           : origin as x,y
+        :param return_points    : points awarded to the player if the crate is destroyed
+        :param crate_type       : the type of crate. Different types can potentially have different images etc. What
+                                  happens when a crate of a type is shot is specified in the Destroyer_logic class
+        :param effect_points    : points for the effect that the destruction of the crate has. The effect is defined
+                                  in the Destroyer_logic class and can for example be health points.
+        :type origin            : set
+        :type return_points     : int
+        :type crate_type        : int
+        :type effect_points     : int
+
+        :returns:
         """
 
         self._origin = origin
@@ -588,6 +639,8 @@ class Crate(object):
         """
         Returns the age of the crate in seconds. Used to check wether the instance of a crate has exceeded the
         best before date and is ready for the trash bin...
+
+        :returns: integer
         """
 
         return (datetime.datetime.now() -  self._create_time).total_seconds()

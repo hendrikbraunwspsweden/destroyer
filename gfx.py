@@ -22,6 +22,8 @@ def blit_alpha(target, source, location, opacity):
 
     """
     Function for blit:ing objects with specified opacity onto the game window
+
+    :returns
     """
 
     x = location[0]
@@ -38,9 +40,15 @@ class Fade_fx(object):
         """
         Class for fade effects. Those are for example boats that have been shot, so they don't just disappear but
         rather fade out.
-        image (pygame.image)  : image to be faded
-        rect (pygame.Rect)    : position rectangle of the image
-        time (int)            : fade time in seconds
+
+        :param image : image to be faded
+        :param rect  : position rectangle of the image
+        :param time  : fade time in seconds
+        :type image  : pygame.Image
+        :type rect   : pygame.Rect
+        :type time   : int
+
+        :returns:
         """
 
         self._image = image
@@ -102,6 +110,8 @@ class Text_fx(object):
         time (int)            : time until complete fade and movement in ms
         movement (int)        : text movement range towards north in pixels
         positive (bool)       : if positive, text is black, otherwise red
+
+        TODO
         """
 
         self._text = text
@@ -178,6 +188,8 @@ class Explosion(object):
         origin (list of int)  : origin as x,y. Usually the impact point of the bullet Lower center of the image
                                 rectangle
         pause (int)           : pause between the images in ms
+
+        TODO
         """
 
         self.__frame = 1
@@ -249,6 +261,8 @@ class Destroyer_gfx(object):
         crates (Creates)          : Crates class game instance
         font_size (int)           : HUD font size
         bg_image (string)         : path to the background image
+
+        TODO
         """
 
         self.__destroyer = destroyer

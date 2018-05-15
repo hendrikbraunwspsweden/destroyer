@@ -22,22 +22,32 @@ class Enemies():
                  ship_ratios=[(1, 20), (20, 100)], max_torpedos=2):
         """
         Class for handling all enemy ship objects.
-        wait_time_range (list of int)     : range of minimum wait time to maximum wait time for spawn of next enemy
-        max_enemies (int)                 : maximum numbers of enemies at once on the screen
-        torpedos (Torpedos)               : game instance of Torpedos class
-        crates (Crates)                   : game instance of Crates class
-        game_speed (int)                  : game speed between 0 and n. Boat speed is adjusted by the game speed
-                                             multiplier defined in the class of the boat types
-        window_size (list of int)         : window size in x,y
-        top_distance (int)                : minimum y position for spwaning enemies in order to avoid HUD
-        ship_ratios (list of ranges)      : see description below
-        max_torpedos (int)                : maximum number of torpedos on the screen at the same time
-
+        :param wait_time_range  : range of minimum wait time to maximum wait time for spawn of next enemy
+        :param max_enemies      : maximum numbers of enemies at once on the screen
+        :param torpedos         : game instance of Torpedos class
+        :param crates           : game instance of Crates class
+        :param game_speed       : game speed between 0 and n. Boat speed is adjusted by the game speed
+                                  multiplier defined in the class of the boat types
+        :param window_size      : window size in x,y
+        :param top_distance     : minimum y position for spwaning enemies in order to avoid HUD
+        :param ship_ratios      : see description below
+        :param max_torpedos     : maximum number of torpedos on the screen at the same time
+        :type wait_time_range   : set
+        :type max_enemies       : int
+        :type torpedos          : Torpedos
+        :type crates            : Crates
+        :type game_speed        : int
+        :type window_size       : list
+        :type top_distance      : int
+        :type ship_ratios       : list of sets
+        :type max_torpedos      : int
 
         Ship_ratios is specified of number ranges between 1 and 100 for the different ship types. If ship type 1 is
         to have a 70% chance of appearing and it is first in the list, then the range should be defined as (1,70)
         and if ship type 2 then is supposed to have a 30% chance of appearing, the range has to be specified as
         (70,100). The ship type class that will be initiated based on the randomized number is defined in add_enemy
+
+        :returns:
         """
 
         self.__enemy_list = []
@@ -58,12 +68,16 @@ class Enemies():
         """
         Method for evaluating if an enemy is to be added, based on the actual number and the time passed since the
         last spawn.
+
+        :returns:
         """
 
         def check_y_position(y):
             """
             Method to check if any other enemy is on the same position or within a frame of 80 pixels. If so, the
             position is regarded as bad and a new ship will not be spawned within that range.
+
+            :returns: boolean
             """
 
             for e in self.__enemy_list:
@@ -148,6 +162,8 @@ class Enemies():
         or have passed the center of the screen, they are equipped with a torpedo (which is defined in the parameter
         dictionary in the ship class) and there are less than the allowed maximum amount of torpedos on the screen at
         this point in time. If there are more, the ship looses it's torpedo.
+
+        :returns:
         """
 
         for e in self.__enemy_list:
@@ -201,6 +217,8 @@ class Enemies():
         """
         Removes the enemies at given indices. Called from the Destroyer_logic class game instance.
         indices (list of int) : indices of the enemies that are to be deleted.
+
+        :returns:
         """
 
         if len(indices) > 0:
@@ -280,13 +298,21 @@ class Crates(object):
         """
         Class for handling crates in the game. Crates appear on randomized positions in the game at random time
         intervals.
-        window_size (list of int) : game window size as x,y
-        y_margin (int)            : y margin for crate positions based for avoiding HUD
-        destroyer (Destroyer)     : Destroyer game instance
-        wait_range (range of int) : range of seconds between which the time delta for the next crate spawn is
-                                    randomized.
-        timeout (int)             : defines how long in seconds crates are in existence after spawning.
-        max_crates (int)          : the maximum number of crates on the screen at the same point in time
+
+        :param window_size  : game window size as x,y
+        :param y_margin     : y margin for crate positions based for avoiding HUD
+        :param destroyer    : Destroyer game instance
+        :param wait_range   : range of seconds between which the time delta for the next crate spawn is randomized.
+        :param timeout      : defines how long in seconds crates are in existence after spawning.
+        :param max_crates   : the maximum number of crates on the screen at the same point in time
+        :type window_size   : list
+        :type y_margin      : int
+        :type destroyer     : Destroyer
+        :type wait_range    : set
+        :type timeout       : int
+        :type max_crates    :int
+
+        :returns:
         """
 
         self._window_size = window_size
@@ -308,6 +334,8 @@ class Crates(object):
         crate is created based on randomized values. The randomized values are checked against existing ship and the
         destroyer positions. The values are randomized until no collision is found.
         TODO: Randomize crate types
+
+        :returns:
         """
 
         new_time = datetime.datetime.now()
@@ -364,6 +392,8 @@ class Crates(object):
         that the crates class uses the enemy class and the enemy class uses the crates class. Initialize the crates
         class first, hand it over to the instance of the enemy class and then set the enemies instance in the crates
         instance using this method.
+
+        :returns:
         """
 
         self._enemies = enemies

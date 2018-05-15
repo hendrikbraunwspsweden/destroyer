@@ -44,16 +44,29 @@ class Destroyer_logic(object):
         """
         This is where all the game logic magic happens. Takes the instances of the different game objects and checks
         for e.g. collisions. Defines what happens when collisions are detected.
-        destroyer (Destroyer)     : game instance of destroyer class
-        enemies (Enemies)         : game instance of enemies class
-        bullets (Bullets)         : game instance of bullets class
-        torpedos (Torpedos)       : game instance of torpedos class
-        explosions (Explosions)   : game instance of Explosions class
-        fades (Fades)             : game instance of Fades class
-        texts (Texts)             : game instance of Texts class
-        points (Points)           : game instance of points class
-        crates (Crates)           : game instance of crates class
-        window_size (list of int) : window size as x(int), y(int)
+
+        :param destroyer    : game instance of destroyer class
+        :param enemies      : game instance of enemies class
+        :param bullets      : game instance of bullets class
+        :param torpedos     : game instance of torpedos class
+        :param explosions   : game instance of Explosions class
+        :param fades        : game instance of Fades class
+        :param texts        : game instance of Texts class
+        :param points       : game instance of points class
+        :param crates       : game instance of crates class
+        :param window_size  : window size as x(int), y(int)
+        :type destroyer     : Destroyer
+        :type enemies       : Enemies
+        :type bullets       : Bullets
+        :type torpedos      : Torpedos
+        :type explosions    : Explosions
+        :type fades         : Fades
+        :type texts         : Texts
+        :type points        : Points
+        :type crates        : Crates
+        :type window_size   : list
+
+        :returns:
         """
 
         self.__destroyer = destroyer
@@ -72,6 +85,8 @@ class Destroyer_logic(object):
         """
         Checks if any of the bullets are outside the game window. Returns a list of indices for the bullets that are
         to be removed.
+
+        :returns: list
         """
         bullet_remove_list = []
         bullet_list = self.__bullets.get_bullets()
@@ -87,6 +102,8 @@ class Destroyer_logic(object):
         """
         Checks for collisions between bullets and enemies and what happens in that case. Returns list of bullets and
         enemies that are to be removed.
+
+        :returns: list
         """
         enemy_remove_list = []
         bullet_remove_list = []
@@ -110,6 +127,8 @@ class Destroyer_logic(object):
 
         """
         Checks if any of the enemies are outside the game window. Returns a list of enemies that are to be removed
+
+        :returns: list
         """
         enemies_remove_list = []
         enemies = self.__enemies.get_enemies()
@@ -141,6 +160,8 @@ class Destroyer_logic(object):
 
         """
         Checks if any of the torpedos are outside the game window. Returns a list of torpedos that are to be removed
+
+        :returns: list
         """
 
         torpedos_remove_list = []
@@ -176,6 +197,8 @@ class Destroyer_logic(object):
         """
         Checks for collisions between bullets and torpedos and what happens in that case. Returns list of bullets
         torpedos that are to be removed.
+
+        :returns: list
         """
 
         torpedo_remove_list = []
@@ -200,6 +223,8 @@ class Destroyer_logic(object):
         """
         Checks for collisions between bullets and crates and what happens in that case. Returns list of bullets and
         crates that are to be removed.
+
+        :returns: list
         """
 
         bullet_remove_list = []
@@ -225,6 +250,8 @@ class Destroyer_logic(object):
         """
         Checks for collisions between enemies and crates and what happens in that case. Returns list of crates that
         are to be removed.
+
+        :returns: list
         """
         crates_remove_list = []
         crate_list = self.__crates.get_crates()
@@ -241,7 +268,10 @@ class Destroyer_logic(object):
         Runs the collision check functions above. The returned lists containing the list indices of the objects that
         are to be deleted are combined per object type. The lists are then "destilled" down to unique indices in
         order to prevent double entries leading to problems during removal. Calls the remove methods for each object
-        type with the "destilled" list as argument. Spawns a new enemy in case all enemies are gone.
+        type with the "destilled" list as argument. Spawns a new enemy in case all enemies are gone. Returns true if
+        the destroyer has been destroyed.
+
+        :returns: boolean
         """
 
         bullet_remove_list_1 = self.__check_bullets()
