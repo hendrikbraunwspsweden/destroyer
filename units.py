@@ -307,9 +307,9 @@ class Enemy(object):
         return self._torpedo_shot
 
     def reduce_hp(self, hp):
-        ################################################################################################################
+        """
         # Reduced hp by a specified number and returns True if no hp left                                              #
-        ################################################################################################################
+        """
         self._hp -= hp
         if self._hp <= 0:
             return True
@@ -482,14 +482,14 @@ class Torpedo_1(Enemy):
 class Bullet(object):
 
     def __init__(self, type, power, origin, direction, px_per_second):
-        ################################################################################################################
+        """
         # Base class for bullets.                                                                                      #
         # type (int)            : bullet type                                                                          #
         # power (int)           : damage done to the enemy on bullet impact                                            #
         # origin (list of int)  : bullet origin as x,y. Usually the center of the game window                          #
         # direction (int)       : direction of the bullet as bearing, between 0 and 360 (north)                        #
         # px_per_second (int)   : bullet speed as pixels per second                                                    #
-        ################################################################################################################
+        """
 
         self.__type = type
         self.__power = power
@@ -511,10 +511,10 @@ class Bullet(object):
                                   self.__image_size[0], self.__image_size[1])
 
     def move(self):
-        ################################################################################################################
+        """
         # Method for bullet movement. The movement distance is calculated by the elapsed time since the last call      #
         # and the speed as defined at instance creation.                                                               #
-        ################################################################################################################
+        """
         new_time = datetime.datetime.now()
         time_delta = new_time - self.__old_time
         self.__old_time = new_time
@@ -539,7 +539,7 @@ class Bullet(object):
 
 class Crate(object):
     def __init__(self, origin, return_points, crate_type, effect_points=100):
-        ################################################################################################################
+        """
         # Crate class. The instance is initialted from the Crates class game instance. The parameters are randomized   #
         # and the position checked for collisions with other objects.                                                  #
         # origin (list of int)  : origin as x,y                                                                        #
@@ -548,7 +548,7 @@ class Crate(object):
         #                         happens when a crate of a type is shot is specified in the Destroyer_logic class     #
         # effect_points (int)   : points for the effect that the destruction of the crate has. The effect is defined   #
         #                       : in the Destroyer_logic class and can for example be health points.                   #
-        ################################################################################################################
+        """
         self._origin = origin
         self._return_points = return_points
         self._image = pygame.image.load("./media/crate.png")
@@ -564,10 +564,10 @@ class Crate(object):
         return self._type
 
     def get_age(self):
-        ################################################################################################################
+        """
         # Returns the age of the crate in seconds. Used to check wether the instance of a crate has exceeded the       #
         # best before date and is ready for the trash bin...                                                           #
-        ################################################################################################################
+        """
         return (datetime.datetime.now() -  self._create_time).total_seconds()
 
     def get_rect(self):
