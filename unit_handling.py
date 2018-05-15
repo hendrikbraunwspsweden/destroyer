@@ -62,8 +62,8 @@ class Enemies():
 
         def check_y_position(y):
             """
-             Method to check if any other enemy is on the same position or within a frame of 80 pixels. If so, the
-             position is regarded as bad and a new ship will not be spawned within that range.
+            Method to check if any other enemy is on the same position or within a frame of 80 pixels. If so, the
+            position is regarded as bad and a new ship will not be spawned within that range.
             """
 
             for e in self.__enemy_list:
@@ -75,7 +75,7 @@ class Enemies():
         def make_ship():
 
             """
-             Function to randomize a ship and its params based on the ratios specified in __ship_ratios.
+            Function to randomize a ship and its params based on the ratios specified in __ship_ratios.
             """
 
             ship_type = randrange(1,100,1)
@@ -142,11 +142,12 @@ class Enemies():
             e.move(self.__game_speed)
 
     def shoot(self):
+
         """
-         Method for making the existing ships shoot torpedos under defined cicumstances, being that they have are on
-         or have passed the center of the screen, they are equipped with a torpedo (which is defined in the parameter
-         dictionary in the ship class) and there are less than the allowed maximum amount of torpedos on the screen at
-         this point in time. If there are more, the ship looses it's torpedo.
+        Method for making the existing ships shoot torpedos under defined cicumstances, being that they have are on
+        or have passed the center of the screen, they are equipped with a torpedo (which is defined in the parameter
+        dictionary in the ship class) and there are less than the allowed maximum amount of torpedos on the screen at
+        this point in time. If there are more, the ship looses it's torpedo.
         """
 
         for e in self.__enemy_list:
@@ -196,9 +197,10 @@ class Enemies():
         return self.__enemy_list
 
     def remove_enemies(self, indices):
+
         """
-         Removes the enemies at given indices. Called from the Destroyer_logic class game instance.
-         indices (list of int) : indices of the enemies that are to be deleted.
+        Removes the enemies at given indices. Called from the Destroyer_logic class game instance.
+        indices (list of int) : indices of the enemies that are to be deleted.
         """
 
         if len(indices) > 0:
@@ -271,18 +273,20 @@ class Bullets(object):
                     new_list.append(self.__bullet_list[b])
             self.__bullet_list = new_list
 
+
 class Crates(object):
+
     def __init__(self, window_size, y_margin, destroyer, wait_range=(20,30), timeout=8, max_crates=2):
         """
-         Class for handling crates in the game. Crates appear on randomized positions in the game at random time
-         intervals.
-         window_size (list of int) : game window size as x,y
-         y_margin (int)            : y margin for crate positions based for avoiding HUD
-         destroyer (Destroyer)     : Destroyer game instance
-         wait_range (range of int) : range of seconds between which the time delta for the next crate spawn is
-                                     randomized.
-         timeout (int)             : defines how long in seconds crates are in existence after spawning.
-         max_crates (int)          : the maximum number of crates on the screen at the same point in time
+        Class for handling crates in the game. Crates appear on randomized positions in the game at random time
+        intervals.
+        window_size (list of int) : game window size as x,y
+        y_margin (int)            : y margin for crate positions based for avoiding HUD
+        destroyer (Destroyer)     : Destroyer game instance
+        wait_range (range of int) : range of seconds between which the time delta for the next crate spawn is
+                                    randomized.
+        timeout (int)             : defines how long in seconds crates are in existence after spawning.
+        max_crates (int)          : the maximum number of crates on the screen at the same point in time
         """
 
         self._window_size = window_size
@@ -298,12 +302,14 @@ class Crates(object):
         self._crate_type = None
 
     def make_crate(self):
+
         """
-         Checks if the time randomized during the last crate spawning event has elapsed. If that is the case, a new
-         crate is created based on randomized values. The randomized values are checked against existing ship and the
-         destroyer positions. The values are randomized until no collision is found.
-         TODO: Randomize crate types
+        Checks if the time randomized during the last crate spawning event has elapsed. If that is the case, a new
+        crate is created based on randomized values. The randomized values are checked against existing ship and the
+        destroyer positions. The values are randomized until no collision is found.
+        TODO: Randomize crate types
         """
+
         new_time = datetime.datetime.now()
         if (new_time-self._old_time).total_seconds() > self._pause:
             self._crate_type = randrange(0,1,1)
@@ -352,10 +358,12 @@ class Crates(object):
         self.remove_crates(remove_list)
 
     def set_enemies(self, enemies):
+
         """
-         The enemies object for the crates class has to be set after initialization due to a circular reference, e.g.
-         that the crates class uses the enemy class and the enemy class uses the crates class. Initialize the crates
-         class first, hand it over to the instance of the enemy class and then set the enemies instance in the crates
-         instance using this method.
+        The enemies object for the crates class has to be set after initialization due to a circular reference, e.g.
+        that the crates class uses the enemy class and the enemy class uses the crates class. Initialize the crates
+        class first, hand it over to the instance of the enemy class and then set the enemies instance in the crates
+        instance using this method.
         """
+
         self._enemies = enemies

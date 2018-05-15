@@ -21,7 +21,7 @@ import datetime
 def blit_alpha(target, source, location, opacity):
 
     """
-     Function for blit:ing objects with specified opacity onto the game window                                        
+    Function for blit:ing objects with specified opacity onto the game window
     """
 
     x = location[0]
@@ -36,11 +36,11 @@ class Fade_fx(object):
     def __init__(self, image, rect, time):
 
         """
-         Class for fade effects. Those are for example boats that have been shot, so they don't just disappear but    
-         rather fade out.                                                                                             
-         image (pygame.image)  : image to be faded                                                                    
-         rect (pygame.Rect)    : position rectangle of the image                                                      
-         time (int)            : fade time in seconds                                                                 
+        Class for fade effects. Those are for example boats that have been shot, so they don't just disappear but
+        rather fade out.
+        image (pygame.image)  : image to be faded
+        rect (pygame.Rect)    : position rectangle of the image
+        time (int)            : fade time in seconds
         """
 
         self._image = image
@@ -72,7 +72,7 @@ class Fades(object):
     def __init__(self):
 
         """
-         Class for managing all the fades in the game window                                                          
+        Class for managing all the fades in the game window
         """
 
         self.__fade_list = []
@@ -95,13 +95,13 @@ class Text_fx(object):
     def __init__(self, origin, text, time, movement, positive=True):
 
         """
-         Class for text effects. Those are for example the point texts shown when an enemy is destroyed. The text is  
-         moved and faded at the same time, giving it a smooth appearance.                                             
-         origin (list of int)  : origin of the text. This will be the bottom center position of the text rectangle    
-         text (string)         : text to be displayed                                                                 
-         time (int)            : time until complete fade and movement in ms                                          
-         movement (int)        : text movement range towards north in pixels                                          
-         positive (bool)       : if positive, text is black, otherwise red                                            
+        Class for text effects. Those are for example the point texts shown when an enemy is destroyed. The text is
+        moved and faded at the same time, giving it a smooth appearance.
+        origin (list of int)  : origin of the text. This will be the bottom center position of the text rectangle
+        text (string)         : text to be displayed
+        time (int)            : time until complete fade and movement in ms
+        movement (int)        : text movement range towards north in pixels
+        positive (bool)       : if positive, text is black, otherwise red
         """
 
         self._text = text
@@ -149,7 +149,7 @@ class Text_fx(object):
 class Texts(object):
 
     """
-     Class holding all text effect objects in the game                                                                
+    Class holding all text effect objects in the game
     """
 
     def __init__(self):
@@ -173,11 +173,11 @@ class Explosion(object):
     def __init__(self, origin, pause):
 
         """
-         Explosion animation class. Shows the sequence of explosion images at specified intervals to create the       
-         illusion of an awesome explosion                                                                             
-         origin (list of int)  : origin as x,y. Usually the impact point of the bullet Lower center of the image      
-                                 rectangle                                                                            
-         pause (int)           : pause between the images in ms                                                       
+        Explosion animation class. Shows the sequence of explosion images at specified intervals to create the
+        illusion of an awesome explosion
+        origin (list of int)  : origin as x,y. Usually the impact point of the bullet Lower center of the image
+                                rectangle
+        pause (int)           : pause between the images in ms
         """
 
         self.__frame = 1
@@ -189,8 +189,8 @@ class Explosion(object):
     def next_frame(self):
 
         """
-         Method to walk through the frames and change image if the specified pause time has elapsed. If the explosion 
-         sequence is finished, it returns True, otherwise False.                                                      
+        Method to walk through the frames and change image if the specified pause time has elapsed. If the explosion
+        sequence is finished, it returns True, otherwise False.
         """
 
         new_time = datetime.datetime.now()
@@ -209,7 +209,7 @@ class Explosion(object):
 class Explosions(object):
 
     """
-     Class holding all instances of explosion objects in the game.                                                    
+    Class holding all instances of explosion objects in the game.
     """
 
     def __init__(self):
@@ -233,21 +233,24 @@ class Destroyer_gfx(object):
 
     def __init__(self, window_size, destroyer, enemies, bullets, torpedos, explosions, fades, texts, points, crates,
                  font_size, bg_image):
+
         """
-         Main graphics class. This is where all the elements are drawn.                                               
-         window_size (list of int) : window size in px as x,y                                                         
-         destroyer (Destroyer)     : Destroyer class game instance                                                    
-         enemies (Enemies)         : Enemies class game instance                                                      
-         bullets (Bullets)         : Bullets class game instance                                                      
-         torpedos (Torpedos)       : Torpedos class game instance                                                     
-         explosions (Explosions)   : Explosions class game instance                                                   
-         fades (Fades)             : Fades class game instance                                                        
-         texts (Texts)             : Texts class game instance                                                        
-         points (Points)           : Points class game instance                                                       
-         crates (Creates)          : Crates class game instance                                                       
-         font_size (int)           : HUD font size                                                                    
-         bg_image (string)         : path to the background image                                                     
+        Main graphics class. This is where all the elements are drawn.
+
+        window_size (list of int) : window size in px as x,y
+        destroyer (Destroyer)     : Destroyer class game instance
+        enemies (Enemies)         : Enemies class game instance
+        bullets (Bullets)         : Bullets class game instance
+        torpedos (Torpedos)       : Torpedos class game instance
+        explosions (Explosions)   : Explosions class game instance
+        fades (Fades)             : Fades class game instance
+        texts (Texts)             : Texts class game instance
+        points (Points)           : Points class game instance
+        crates (Creates)          : Crates class game instance
+        font_size (int)           : HUD font size
+        bg_image (string)         : path to the background image
         """
+
         self.__destroyer = destroyer
         self.__enemies = enemies
         self.__bullets = bullets
@@ -264,6 +267,12 @@ class Destroyer_gfx(object):
         self.make_background()
 
     def __render_hud(self):
+
+        """
+        Method for rendering the HUD, showing information on the player HP, points and level.
+        :return:
+        """
+
         myfont = pygame.font.SysFont('Arial', self.__font_size)
         rect = pygame.Rect(0,0,self.__window_size[0],self.__font_size)
         pygame.draw.rect(self.__screen, (150,150,150), rect, 0)
@@ -278,12 +287,37 @@ class Destroyer_gfx(object):
 
 
     def make_background(self):
+
+        """
+        Method for painting the stretching the background and drawing it onto the screen
+        :return:
+        """
+
         self.__background = pygame.image.load(self.__background_path)
         self.__background = pygame.transform.scale(self.__background, (self.__window_size[0], self.__window_size[1]))
         self.__background_rect = self.__background.get_rect()
         self.__background_rect.left, self.__background_rect.top = [0,0]
 
     def draw(self):
+
+        """
+        The drawing method itself. Drawing order:
+        1. Background image
+        2. Destroyer
+        3. Bullets
+        4. Crates
+        5. Fades
+        6. Tower
+        7. Torpedos
+        8. Enemies
+        9. Destroyer pipe
+        10. Explosions
+        11. Texts
+        12. HUD
+
+        :return:
+        """
+
         self.__screen.blit(self.__background, self.__background_rect)
 
         self.__screen.blit(self.__destroyer.get_image()[0], self.__destroyer.get_image()[1])
