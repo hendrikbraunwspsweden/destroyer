@@ -296,6 +296,9 @@ class Destroyer_logic(object):
         if len(self.__enemies.get_enemies()) == 0:
             self.__enemies.add_enemy()
 
+        #Add the number of enemies sunk in this round to the total count
+        self.__enemies.inc_sunk_count(len(enemy_remove_list_1))
+
         if destroyer_destroyed:
             return True
         else:

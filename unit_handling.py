@@ -17,35 +17,48 @@
 from units import *
 
 class Enemies():
+    """
+    Ship_ratios is specified of number ranges between 1 and 100 for the different ship types. If ship type 1 is
+    to have a 70% chance of appearing and it is first in the list, then the range should be defined as (1,70)
+    and if ship type 2 then is supposed to have a 30% chance of appearing, the range has to be specified as
+    (70,100). The ship type class that will be initiated based on the randomized number is defined in add_enemy
+    """
 
-    def __init__(self, wait_time_range, max_enemies, torpedos, crates, game_speed, window_size, top_distance,
-                 ship_ratios=[(1, 20), (20, 100)], max_torpedos=2):
+    __ship_ratios_per_level = {
+        0:[(1,99), (99,100)],
+        1:[(1,2), (2,100)],
+        2:[(1,20), (20,100)],
+        3:[(1,20), (20,100)],
+        4:[(1,20), (20,100)],
+        5:[(1,20), (20,100)],
+        6:[(1,20), (20,100)],
+        7:[(1,20), (20,100)],
+        8:[(1,20), (20,100)],
+        9:[(1,20), (20,100)]
+    }
+
+    def __init__(self, wait_time_range, max_enemies, torpedos, crates, game_level, window_size, top_distance,
+                 max_torpedos=2):
         """
         Class for handling all enemy ship objects.
         :param wait_time_range  : range of minimum wait time to maximum wait time for spawn of next enemy
         :param max_enemies      : maximum numbers of enemies at once on the screen
         :param torpedos         : game instance of Torpedos class
         :param crates           : game instance of Crates class
-        :param game_speed       : game speed between 0 and n. Boat speed is adjusted by the game speed
-                                  multiplier defined in the class of the boat types
+        :param game_level       : game instance of game level object. Holds the game level that is used with a
+                                  multiplier defined in the class of the boat types to increase boat speed
         :param window_size      : window size in x,y
         :param top_distance     : minimum y position for spwaning enemies in order to avoid HUD
-        :param ship_ratios      : see description below
         :param max_torpedos     : maximum number of torpedos on the screen at the same time
         :type wait_time_range   : set
         :type max_enemies       : int
         :type torpedos          : Torpedos
         :type crates            : Crates
-        :type game_speed        : int
+        :type game_level        : Game_level
         :type window_size       : list
         :type top_distance      : int
-        :type ship_ratios       : list of sets
         :type max_torpedos      : int
 
-        Ship_ratios is specified of number ranges between 1 and 100 for the different ship types. If ship type 1 is
-        to have a 70% chance of appearing and it is first in the list, then the range should be defined as (1,70)
-        and if ship type 2 then is supposed to have a 30% chance of appearing, the range has to be specified as
-        (70,100). The ship type class that will be initiated based on the randomized number is defined in add_enemy
 
         :returns:
         """
@@ -56,13 +69,14 @@ class Enemies():
         self.__old_time = datetime.datetime.now()
         self.__next_enemy_in = 0
         self.__window_size = window_size
-        self.__ship_ratios = ship_ratios
+        self.__game_level = game_level
+        self.__ship_ratios = self.__ship_ratios_per_level[self.__game_level.get_level()]
         self.__torpedos = torpedos
         self.__crates = crates
-        self.__game_speed = game_speed
         self.__top_distance = top_distance
         self.__max_torpedos = max_torpedos
         self.__total_enemies = 0
+        self.__sunk_enemies_count = 0
 
     def add_enemy(self):
         """
@@ -86,6 +100,13 @@ class Enemies():
                     return True
             return False
 
+        def build_my_ship(ship_type, speed, origin, direction):
+            if ship_type == 0:
+                ship = Submarine(speed, origin, direction)
+            elif ship_type == 1 :
+                ship = Torpedoboat(speed, origin, direction)
+            return ship
+
         def make_ship():
 
             """
@@ -94,6 +115,7 @@ class Enemies():
 
             ship_type = randrange(1,100,1)
             ship_type_count = len(self.__ship_ratios)
+            self.__ship_ratios = self.__ship_ratios_per_level[self.__game_level.get_level()]
             for i in range(ship_type_count):
                 if ship_type in range(self.__ship_ratios[i][0], self.__ship_ratios[i][1]):
                     ship_type = i
@@ -106,6 +128,13 @@ class Enemies():
                 param_dict = Torpedoboat.get_params()
 
             speed = randrange(param_dict["min_speed"], param_dict["max_speed"], 1)
+
+            if param_dict["spawn_method"] == 1:
+                spawn_origin = param_dict["fixed_spawn"][0]
+                x = spawn_origin[0] if spawn_origin[0] is not -1 else self.__window_size[2]
+                y = spawn_origin[1] if spawn_origin[1] is not -1 else self.__window_size[3]
+                direction = param_dict["fixed_spawn"][1]
+                return build_my_ship(ship_type, speed, (x,y), direction)
 
             good_y = False
 
@@ -126,13 +155,8 @@ class Enemies():
             if direction == 3:
                 origin = self.__window_size[0], y
 
+            return build_my_ship(ship_type, speed, origin, direction)
             #Assign classes to the ship types
-            if ship_type == 0:
-                ship = Submarine(speed, origin, direction)
-            elif ship_type == 1 :
-                ship = Torpedoboat(speed, origin, direction)
-
-            return ship
 
         if len(self.__enemy_list) == 0:
             self.__enemy_list.append(make_ship())
@@ -149,11 +173,13 @@ class Enemies():
                     self.__old_time = new_time
 
     def move(self):
+
         """
         Move all ships.
         """
+
         for e in self.__enemy_list:
-            e.move(self.__game_speed)
+            e.move(self.__game_level.get_level())
 
     def shoot(self):
 
@@ -234,6 +260,17 @@ class Enemies():
     def get_total_enemies(self):
         return self.__total_enemies
 
+    def get_sunk_count(self):
+        return self.__sunk_enemies_count
+
+    def inc_sunk_count(self, plus):
+        self.__sunk_enemies_count += plus
+
+    def reset_sunk_count(self):
+        self.__sunk_enemies_count = 0
+
+    def set_wait_time_range(self, range):
+        self.__wait_time_range = range
 
 class Torpedos(object):
     def __init__(self):
@@ -294,7 +331,20 @@ class Bullets(object):
 
 class Crates(object):
 
-    def __init__(self, window_size, y_margin, destroyer, wait_range=(20,30), timeout=8, max_crates=2):
+    __wait_range_per_level = {
+        0:(1,5),
+        1:(10,40),
+        2:(30,40),
+        3:(30,40),
+        4:(30,40),
+        5:(30,40),
+        6:(30,40),
+        7:(30,40),
+        8:(30,40),
+        9:(30,40),
+    }
+
+    def __init__(self, window_size, y_margin, destroyer, game_level, timeout=8, max_crates=2):
         """
         Class for handling crates in the game. Crates appear on randomized positions in the game at random time
         intervals.
@@ -302,28 +352,29 @@ class Crates(object):
         :param window_size  : game window size as x,y
         :param y_margin     : y margin for crate positions based for avoiding HUD
         :param destroyer    : Destroyer game instance
-        :param wait_range   : range of seconds between which the time delta for the next crate spawn is randomized.
+        :param game_level   : game instance of the game level class
         :param timeout      : defines how long in seconds crates are in existence after spawning.
         :param max_crates   : the maximum number of crates on the screen at the same point in time
         :type window_size   : list
         :type y_margin      : int
         :type destroyer     : Destroyer
-        :type wait_range    : set
+        :type game_level    : Game_level
         :type timeout       : int
-        :type max_crates    :int
+        :type max_crates    : int
 
         :returns:
         """
 
         self._window_size = window_size
-        self._wait_range = wait_range
+        self._game_level = game_level
+        self._wait_range = self.__wait_range_per_level[self._game_level.get_level()]
         self._max_crates = max_crates
         self._y_margin = y_margin
         self._destroyer = destroyer
         self._enemies = None
         self._crates_list = []
         self._old_time = datetime.datetime.now()
-        self._pause = randrange(wait_range[0], wait_range[1], 1)
+        self._pause = randrange(self._wait_range[0], self._wait_range[1], 1)
         self._timeout = timeout
         self._crate_type = None
 
@@ -347,7 +398,6 @@ class Crates(object):
             crate_size = Crate.get_size()
 
             while not good_pos:
-                print("makeing crates")
                 good_pos_int = 0
                 x = randrange(0,self._window_size[0], 1)
                 y = randrange(self._y_margin, self._window_size[1] - 30, 1)
@@ -364,6 +414,7 @@ class Crates(object):
                     good_pos = True
 
             self._crates_list.append(Crate((x,y),100, 0, 100))
+            self._wait_range = self.__wait_range_per_level[self._game_level.get_level()]
             self._pause = randrange(self._wait_range[0], self._wait_range[1], 1)
             self._old_time = new_time
 

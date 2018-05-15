@@ -100,18 +100,17 @@ class Fades(object):
 
 
 class Text_fx(object):
-    def __init__(self, origin, text, time, movement, positive=True):
+    def __init__(self, origin, text, time, movement, font_size=16, positive=True):
 
         """
         Class for text effects. Those are for example the point texts shown when an enemy is destroyed. The text is
         moved and faded at the same time, giving it a smooth appearance.
+
         origin (list of int)  : origin of the text. This will be the bottom center position of the text rectangle
         text (string)         : text to be displayed
         time (int)            : time until complete fade and movement in ms
         movement (int)        : text movement range towards north in pixels
         positive (bool)       : if positive, text is black, otherwise red
-
-        TODO
         """
 
         self._text = text
@@ -126,11 +125,12 @@ class Text_fx(object):
         self._alpha = 255
         self._color = (0,0,0)
         self._rect = None
+        self._font_size = font_size
 
         if not positive:
             self._color = (190,28,28)
 
-        myfont = pygame.font.SysFont('Arial', 16)
+        myfont = pygame.font.SysFont('Arial', self._font_size)
         self._image = myfont.render(self._text, False, self._color)
         rect = self._image.get_rect()
         self._size_x, self._size_y = rect[2], rect[3]
@@ -155,7 +155,6 @@ class Text_fx(object):
     def get_alpha(self):
         return self._alpha
 
-
 class Texts(object):
 
     """
@@ -165,8 +164,8 @@ class Texts(object):
     def __init__(self):
         self.__text_list = []
 
-    def add_text(self, origin, text, positive=True):
-        self.__text_list.append(Text_fx(origin, text, 1000, 80, positive=positive))
+    def add_text(self, origin, text, positive=True, font_size=16):
+        self.__text_list.append(Text_fx(origin, text, 1000, 80, font_size=font_size, positive=positive))
 
     def move(self):
         new_texts = []
@@ -244,7 +243,7 @@ class Explosions(object):
 class Destroyer_gfx(object):
 
     def __init__(self, window_size, destroyer, enemies, bullets, torpedos, explosions, fades, texts, points, crates,
-                 font_size, bg_image):
+                 game_level, font_size, bg_image):
 
         """
         Main graphics class. This is where all the elements are drawn.
@@ -278,6 +277,7 @@ class Destroyer_gfx(object):
         self.__texts = texts
         self.__font_size = font_size
         self.__crates = crates
+        self.__game_level = game_level
         self.make_background()
 
     def __render_hud(self):
@@ -295,9 +295,12 @@ class Destroyer_gfx(object):
         self.__screen.blit(points, (0,0))
 
         hp_ratio = self.__destroyer.get_hp() / float(self.__destroyer.get_max_hp())
-        surface = myfont.render('Life: {}'.format(self.__destroyer.get_hp()), False, (255, 255*hp_ratio,255*hp_ratio))
+        hp = myfont.render('Life: {}'.format(self.__destroyer.get_hp()), False, (255, 255*hp_ratio,255*hp_ratio))
+        self.__screen.blit(hp, (100,0))
 
-        self.__screen.blit(surface, (100,0))
+        level = myfont.render("Level: {}".format(self.__game_level.get_level() +1), False, (255,255,255))
+        size_x = level.get_rect()[2]
+        self.__screen.blit(level, (self.__window_size[0] - size_x - 10, 0))
 
 
     def make_background(self):

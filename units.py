@@ -208,7 +208,9 @@ class Enemy(object):
         "torpedo_type":None,
         "torpedo_speed":None,
         "torpedo_chance":None,
-        "points":None
+        "points":None,
+        "spawn_method":None,
+        "fixed_spawn":None
     }
 
     def __init__(self, hp, px_per_second, origin, direction):
@@ -240,6 +242,12 @@ class Enemy(object):
         "torpedo_speed(int)               :torpedo speed in px/sec
         "torpedo_chance(float)            : chance of shooting torpedo, between 0.0 and 1.0
         "points (int)                     : points awarded to player when enemy is shot
+        "spawn_type" (int)                : sets wether the start point of the ship is randomized (value 0) or defined
+                                            by the origin parameter
+        "fixed_spawn" (list)              : origin as x,y and direction (0-3). Either the x or y of the origin can be
+                                            defined as -1, so the enemy is spawned at the edge of the game window.
+                                            Example: [(-1, 50), 3] will give a ship that is spawned on the right outer
+                                            limit of the game window at 50 pixels down and go towards west.
 
         :returns:
         """
@@ -388,7 +396,9 @@ class Submarine(Enemy):
         "torpedo_type":1,
         "torpedo_speed":30,
         "torpedo_chance":0.6,
-        "points":100
+        "points":100,
+        "spawn_method":0,
+        "fixed_spawn":None
     }
 
     def __init__(self, px_per_second, origin, direction):
@@ -425,7 +435,9 @@ class Torpedoboat(Enemy):
         "torpedo_type":0,
         "torpedo_speed":0,
         "torpedo_chance":0.4,
-        "points":100
+        "points":100,
+        "spawn_method":0,
+        "fixed_spawn":[(1024, 500),3]
     }
 
     def __init__(self, px_per_second, origin, direction):
@@ -462,7 +474,9 @@ class Torpedo_0(Enemy):
         "torpedo_speed":0,
         "torpedo_chance":0,
         "points":300,
-        "damage":50
+        "damage":50,
+        "spawn_method":None,
+        "fixed_spawn":None
     }
 
     def __init__(self, px_per_second, origin, direction):
@@ -502,7 +516,9 @@ class Torpedo_1(Enemy):
         "torpedo_speed":0,
         "torpedo_chance":0,
         "points":300,
-        "damage":100
+        "damage":100,
+        "spawn_method":None,
+        "fixed_spawn":None
     }
 
     def __init__(self, px_per_second, origin, direction):
