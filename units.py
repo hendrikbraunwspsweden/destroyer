@@ -14,7 +14,7 @@
 # If not, see <http://www.gnu.org/licenses/>.                                                                          #
 ########################################################################################################################
 
-from math import sin, cos, radians
+from math import sin, cos, radians, sqrt, atan, degrees
 import pygame
 import datetime
 from math import floor
@@ -75,6 +75,44 @@ def project_point(original_x, original_y, bearing, distance):
         move_y = sin(radians(angle))*distance
         return [original_x - move_x, original_y - move_y]
 
+
+def get_bearing(point_1, point_2):
+    """
+    Function for calculating the bearing and distance (azimuth) between two points
+
+    :param point_1: coordinates of first point as set(x,y)
+    :param point_2: coorindate of second point as set(x,y)
+    :return: bearing as int, distance as int
+    """
+    delta_x = point_2[0] - point_1[0]
+    delta_y = point_2[1] - point_1[1]
+
+    print(delta_x, delta_y)
+
+    distance = sqrt(pow(delta_x, 2)+pow(delta_y, 2))
+
+    if delta_x == 0 and delta_y == 0:
+        return 0,0
+    if delta_x == 0 and delta_y < 0:
+        return 0
+    if delta_x == 0 and delta_y > 0:
+        return 180
+    if delta_x < 0 and delta_y == 0:
+        return 270
+    if delta_x > 0 and delta_y == 0:
+        return 90
+
+    if delta_y < 0 < delta_x:
+        return degrees(atan((point_2[0] - point_1[0])/-(point_2[1] - point_1[1]))), distance
+
+    elif delta_x > 0 and delta_y > 0:
+        return 180 + degrees(atan((point_2[0] - point_1[0])/-(point_2[1] - point_1[1]))), distance
+
+    elif delta_x < 0 < delta_y:
+        return 180 + degrees(atan((point_2[0] - point_1[0])/-(point_2[1] - point_1[1]))), distance
+
+    elif delta_x < 0 and delta_y < 0:
+        return 360 + degrees(atan((point_2[0] - point_1[0])/-(point_2[1] - point_1[1]))), distance
 
 class Destroyer(object):
 
@@ -209,8 +247,9 @@ class Enemy(object):
         "torpedo_speed":None,
         "torpedo_chance":None,
         "points":None,
+        "damage":None,
         "spawn_method":None,
-        "fixed_spawn":None
+        "fixed_spawn":[(),None]
     }
 
     def __init__(self, hp, px_per_second, origin, direction):
@@ -397,8 +436,9 @@ class Submarine(Enemy):
         "torpedo_speed":30,
         "torpedo_chance":0.6,
         "points":100,
+        "damage":None,
         "spawn_method":0,
-        "fixed_spawn":None
+        "fixed_spawn":[(),None]
     }
 
     def __init__(self, px_per_second, origin, direction):
@@ -436,8 +476,9 @@ class Torpedoboat(Enemy):
         "torpedo_speed":0,
         "torpedo_chance":0.4,
         "points":100,
+        "damage":None,
         "spawn_method":0,
-        "fixed_spawn":[(1024, 500),3]
+        "fixed_spawn":[(),None]
     }
 
     def __init__(self, px_per_second, origin, direction):
@@ -475,8 +516,8 @@ class Torpedo_0(Enemy):
         "torpedo_chance":0,
         "points":300,
         "damage":50,
-        "spawn_method":None,
-        "fixed_spawn":None
+        "spawn_method":0,
+        "fixed_spawn":[(),None]
     }
 
     def __init__(self, px_per_second, origin, direction):
@@ -518,7 +559,7 @@ class Torpedo_1(Enemy):
         "points":300,
         "damage":100,
         "spawn_method":None,
-        "fixed_spawn":None
+        "fixed_spawn":[(),None]
     }
 
     def __init__(self, px_per_second, origin, direction):
@@ -532,6 +573,46 @@ class Torpedo_1(Enemy):
         self._image = pygame.image.load("./media/torpedo1.png")
         if self._direction == 0:
             self._image = pygame.transform.rotate(self._image, 180)
+        rect = self._image.get_rect()
+        self._image_size = rect[2], rect[3]
+        self._rect = pygame.Rect(self._position[0], self._position[1]-self._image_size[1]/2,
+                                 self._image_size[0], self._image_size[1])
+
+    @classmethod
+    def get_params(cls):
+        return cls.param_dict
+
+    def get_damage(self):
+        return self._param_dict["damage"]
+
+
+class Rowing_boat(Enemy):
+
+    param_dict = {
+        "hp":100,
+        "min_speed":30,
+        "max_speed":50,
+        "game_speed_multiplier":0.1,
+        "min_dist":100,
+        "has_torpedo":False,
+        "torpedo_type":0,
+        "torpedo_speed":0,
+        "torpedo_chance":0,
+        "points":300,
+        "damage":50,
+        "spawn_method":1,
+        "fixed_spawn":[(-1,0),None]
+    }
+
+    def __init__(self, px_per_second, origin, direction):
+
+        Enemy.__init__(self, self.param_dict["hp"], px_per_second, origin, direction)
+
+        #Handing over the parameter dict to the parent class
+        self._param_dict = self.param_dict
+
+        #Setting image related parameters
+        self._image = pygame.image.load("./media/torpedo1.png")
         rect = self._image.get_rect()
         self._image_size = rect[2], rect[3]
         self._rect = pygame.Rect(self._position[0], self._position[1]-self._image_size[1]/2,
