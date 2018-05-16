@@ -15,6 +15,8 @@
 ########################################################################################################################
 
 
+#TODO: add global timer to graphical objects
+
 import pygame
 import sys
 from units import *
@@ -24,19 +26,25 @@ from logic import *
 from unit_handling import *
 from time import sleep
 
-class Time_delta(object):
+class Timer(object):
     def __init__(self):
+        self.__old_time = None
+        self.__new_time = None
+        self.__delta = None
+
+    def start(self):
         self.__old_time = datetime.datetime.now()
-        self.__new_time = self.__old_time
         self.__delta = 0
 
-    def get_delta(self):
+    def time(self):
         new_time = datetime.datetime.now()
         self.__delta = (new_time-self.__old_time).total_seconds()
         self.__old_time = new_time
+
+    def get_delta(self):
         return self.__delta
 
-    def reset_delta(self):
+    def reset(self):
         self.__old_time = datetime.datetime.now()
         self.__delta = 0
 
@@ -122,6 +130,7 @@ class Destroyer_game(object):
         self.__wait_time_range = self.__enemy_wait_time_ranges[init_game_level]
 
         #Initializing all game objects
+        timer = Timer()
         pygame.init()
         pygame.font.init()
         game_level = Game_level(init_game_level)
@@ -129,13 +138,14 @@ class Destroyer_game(object):
         texts = Texts()
         explosions = Explosions()
         destroyer = Destroyer(0,500, 1000, self.__window_size)
-        bullets = Bullets((self.__window_size[0]/2, self.__window_size[1]/2), self.__window_size)
-        torpedos = Torpedos()
-        crates = Crates(self.__window_size, self.__font_size + 20, destroyer, game_level)
-        enemies = Enemies(self.__wait_time_range, self.__max_enemies_ff, torpedos, crates, game_level,
+        bullets = Bullets(timer, (self.__window_size[0]/2, self.__window_size[1]/2), self.__window_size)
+        torpedos = Torpedos(timer)
+        crates = Crates(timer, self.__window_size, self.__font_size + 20, destroyer, game_level)
+        enemies = Enemies(timer, self.__wait_time_range, self.__max_enemies_ff, torpedos, crates, game_level,
                           self.__window_size, font_size)
         crates.set_enemies(enemies)
         fades = Fades()
+        timer.start()
         enemies.add_enemy()
 
         #Initializing game logic
@@ -151,7 +161,6 @@ class Destroyer_game(object):
 
         graphics.draw()
         exit_game = False
-
 
         while not exit_game:
 
@@ -174,7 +183,7 @@ class Destroyer_game(object):
             explosions.change_frames()
             fades.fade()
             texts.move()
-            crates.make_crate()
+            crates.make_crate(timer)
             crates.check()
 
             self.__total_enemies = enemies.get_total_enemies()
@@ -192,7 +201,7 @@ class Destroyer_game(object):
 
             if keys[pygame.K_SPACE]:
                 if destroyer.shoot():
-                    bullets.add_bullet(0,100, destroyer.get_direction(), 800)
+                    bullets.add_bullet(timer, 0,100, destroyer.get_direction(), 800)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT: sys.exit()
@@ -203,6 +212,8 @@ class Destroyer_game(object):
                     if key == "escape":
                         if ingame_menu.show() == 0:
                             exit_game = True
+                        else:
+                            timer.reset()
 
 
             graphics.draw()
@@ -210,7 +221,7 @@ class Destroyer_game(object):
             #screen.fill(black)
             #screen.blit(ball, ballrect)
             #pygame.display.flip()
-
+            timer.time()
 
     def __del__(self):
         pass

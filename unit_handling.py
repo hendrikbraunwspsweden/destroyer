@@ -37,7 +37,7 @@ class Enemies():
         9:[(1,30), (30,60), (60,100)]
     }
 
-    def __init__(self, wait_time_range, max_enemies, torpedos, crates, game_level, window_size, top_distance,
+    def __init__(self, timer, wait_time_range, max_enemies, torpedos, crates, game_level, window_size, top_distance,
                  max_torpedos=2):
         """
         Class for handling all enemy ship objects.
@@ -62,11 +62,10 @@ class Enemies():
 
         :returns:
         """
-
+        self.__timer = timer
         self.__enemy_list = []
         self.__wait_time_range = wait_time_range
         self.__max_enemies = max_enemies
-        self.__old_time = datetime.datetime.now()
         self.__next_enemy_in = 0
         self.__window_size = window_size
         self.__game_level = game_level
@@ -77,6 +76,7 @@ class Enemies():
         self.__max_torpedos = max_torpedos
         self.__total_enemies = 0
         self.__sunk_enemies_count = 0
+        self.__total_time = 0
 
     def add_enemy(self):
         """
@@ -160,21 +160,20 @@ class Enemies():
                 origin = self.__window_size[0], y
 
             return build_my_ship(ship_type, speed, origin, direction)
-            #Assign classes to the ship types
 
+        self.__total_time += self.__timer.get_delta()
         if len(self.__enemy_list) == 0:
             self.__enemy_list.append(make_ship())
             self.__total_enemies += 1
             self.__next_enemy_in = randrange(self.__wait_time_range[0], self.__wait_time_range[1], 1)
-            self.__old_time = datetime.datetime.now()
+            self.__total_time = 0
         else:
             if len(self.__enemy_list) < self.__max_enemies:
-                new_time = datetime.datetime.now()
-                if (new_time - self.__old_time).total_seconds() > self.__next_enemy_in:
+                if self.__total_time > self.__next_enemy_in:
                     self.__enemy_list.append(make_ship())
                     self.__total_enemies += 1
                     self.__next_enemy_in = randrange(self.__wait_time_range[0], self.__wait_time_range[1], 1)
-                    self.__old_time = new_time
+                    self.__total_time = 0
 
     def move(self):
 
@@ -183,7 +182,7 @@ class Enemies():
         """
 
         for e in self.__enemy_list:
-            e.move(self.__game_level.get_level())
+            e.move(self.__timer.get_delta(), self.__game_level.get_level())
 
     def shoot(self):
 
@@ -280,8 +279,9 @@ class Enemies():
         self.__wait_time_range = range
 
 class Torpedos(object):
-    def __init__(self):
+    def __init__(self, timer):
         self.__torpedo_list = []
+        self.__timer = timer
 
     def get_torpedos(self):
         return self.__torpedo_list
@@ -291,7 +291,7 @@ class Torpedos(object):
 
     def move(self):
         for t in self.__torpedo_list:
-            t.move()
+            t.move(self.__timer.get_delta())
 
     def remove_torpedos(self, indices):
         if len(indices) > 0:
@@ -307,13 +307,14 @@ class Torpedos(object):
 
 class Bullets(object):
 
-    def __init__(self, origin, window_size):
+    def __init__(self, timer, origin, window_size):
+        self.__timer = timer
         self.__origin = origin
         self.__window_size = window_size
         self.__bullet_list = []
 
-    def add_bullet(self, type, power, direction, speed):
-        self.__bullet_list.append(Bullet(type, power, self.__origin, direction, speed))
+    def add_bullet(self, timer, type, power, direction, speed):
+        self.__bullet_list.append(Bullet(timer, type, power, self.__origin, direction, speed))
 
     def move(self):
         pop_list = []
@@ -351,11 +352,12 @@ class Crates(object):
         9:(30,40),
     }
 
-    def __init__(self, window_size, y_margin, destroyer, game_level, timeout=8, max_crates=2):
+    def __init__(self, timer, window_size, y_margin, destroyer, game_level, timeout=8, max_crates=2):
         """
         Class for handling crates in the game. Crates appear on randomized positions in the game at random time
         intervals.
 
+        :param timer        : timer game instance
         :param window_size  : game window size as x,y
         :param y_margin     : y margin for crate positions based for avoiding HUD
         :param destroyer    : Destroyer game instance
@@ -371,7 +373,7 @@ class Crates(object):
 
         :returns:
         """
-
+        self._timer = timer
         self._window_size = window_size
         self._game_level = game_level
         self._wait_range = self.__wait_range_per_level[self._game_level.get_level()]
@@ -380,12 +382,12 @@ class Crates(object):
         self._destroyer = destroyer
         self._enemies = None
         self._crates_list = []
-        self._old_time = datetime.datetime.now()
+        self._total_time = 0
         self._pause = randrange(self._wait_range[0], self._wait_range[1], 1)
         self._timeout = timeout
         self._crate_type = None
 
-    def make_crate(self):
+    def make_crate(self, timer):
 
         """
         Checks if the time randomized during the last crate spawning event has elapsed. If that is the case, a new
@@ -396,8 +398,8 @@ class Crates(object):
         :returns:
         """
 
-        new_time = datetime.datetime.now()
-        if (new_time-self._old_time).total_seconds() > self._pause:
+        self._total_time += self._timer.get_delta()
+        if self._total_time > self._pause:
             self._crate_type = randrange(0,1,1)
             good_pos = False
             enemies = self._enemies.get_enemies()
@@ -423,7 +425,7 @@ class Crates(object):
             self._crates_list.append(Crate((x,y),100, 0, 100))
             self._wait_range = self.__wait_range_per_level[self._game_level.get_level()]
             self._pause = randrange(self._wait_range[0], self._wait_range[1], 1)
-            self._old_time = new_time
+            self._total_time = 0
 
     def get_crates(self):
         return self._crates_list

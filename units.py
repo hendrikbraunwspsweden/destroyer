@@ -286,6 +286,7 @@ class Enemy(object):
 
         """
         Base class for enemy objects. That can be ships as well as for example torpedos.
+        :param timer            : timer game instance
         :param hp               : HP of the enemy vessel
         :param px_per_second    : unit movement speed in pixels per second
         :param origin           : origin as x,y
@@ -327,7 +328,6 @@ class Enemy(object):
         self._direction = direction
         self._px_per_second = px_per_second
         self._direction = direction
-        self._old_time = datetime.datetime.now()
         self._image = None
         self._image_size = None
         self._rect = None
@@ -348,7 +348,7 @@ class Enemy(object):
     def get_center_point(self):
         return self._position[0] + self._image_size[0]/2, self._position[1] + self._image_size[1]/2
 
-    def move(self, level=0):
+    def move(self, time_delta, level=0):
 
         """
         Method to move the enemy vessel. The movement per cycle is calculated based on the time elapsed since the
@@ -360,10 +360,7 @@ class Enemy(object):
 
         """
 
-        new_time = datetime.datetime.now()
-        time_delta = new_time - self._old_time
-        self._old_time = new_time
-        vector_delta = time_delta.total_seconds() * (self._px_per_second + (self._px_per_second *
+        vector_delta = time_delta * (self._px_per_second + (self._px_per_second *
                                                      self._param_dict["game_speed_multiplier"] *
                                                      level))
 
@@ -737,10 +734,11 @@ class Rowing_boat(Enemy):
 
 class Bullet(object):
 
-    def __init__(self, type, power, origin, direction, px_per_second):
+    def __init__(self, timer, type, power, origin, direction, px_per_second):
 
         """
         Base class for bullets.
+        :param timer        : game timer instance
         :param type         : bullet type
         :param power        : damage done to the enemy on bullet impact
         :param origin       : bullet origin as x,y. Usually the center of the game window
@@ -754,7 +752,7 @@ class Bullet(object):
 
         :returns:
         """
-
+        self.__timer = timer
         self.__type = type
         self.__power = power
         self.__position = list(origin)
@@ -783,10 +781,8 @@ class Bullet(object):
         :returns:
         """
 
-        new_time = datetime.datetime.now()
-        time_delta = new_time - self.__old_time
-        self.__old_time = new_time
-        vector_delta = floor(time_delta.total_seconds() * self.__px_per_second)
+        time_delta = self.__timer.get_delta()
+        vector_delta = floor(time_delta * self.__px_per_second)
 
         self.__position = project_point(self.__position[0], self.__position[1], self.__direction, vector_delta)
 
