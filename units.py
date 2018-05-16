@@ -139,6 +139,8 @@ class Destroyer(object):
         self.__max_hp = hp
         self.__last_shot = None
         self.__window_size = window_size
+        self.__shooting_power = 100
+        self.__last_shooting_power_check = datetime.datetime.now()
 
         if type == 0:
             self.__pipe_length = 30
@@ -191,17 +193,45 @@ class Destroyer(object):
     def get_pipe(self):
         return self.__pipe
 
-    def shoot(self):
-        if self.__last_shot is None:
-            self.__last_shot = datetime.datetime.now()
-            return True
+    def shoot(self, held_in=True):
+        if self.__shooting_power < 20:
+            return False
         else:
-            delta = datetime.datetime.now() - self.__last_shot
-            if delta.total_seconds()*1000 > self.__reload_time:
+            if self.__last_shot is None:
                 self.__last_shot = datetime.datetime.now()
                 return True
             else:
-                return False
+                delta = datetime.datetime.now() - self.__last_shot
+                if delta.total_seconds()*1000 > self.__reload_time:
+                    self.__last_shot = datetime.datetime.now()
+                    if self.__shooting_power < 80:
+                        self.__shooting_power -= 40
+                    else:
+                        self.__shooting_power -= 30
+                    if self.__shooting_power < 0:
+                        self.__shooting_power = 0
+                    return True
+                else:
+                    return False
+
+    def regenerate_power(self):
+        """
+        Method to regenerate shooting power if drained. Slower regeneration below 20 to give a distadvanatage when
+        using permanent fire. Fast regeneration above 50 to not drain too much when using single shots.
+        :return:
+        """
+        new_time = datetime.datetime.now()
+        delta = (new_time - self.__last_shooting_power_check).total_seconds()
+        if self.__shooting_power > 20:
+            self.__shooting_power += 50 * delta
+        else:
+            self.__shooting_power += 20 * delta
+        if self.__shooting_power > 100:
+            self.__shooting_power = 100
+        self.__last_shooting_power_check = new_time
+
+    def get_shooting_power(self):
+        return self.__shooting_power
 
     def get_direction(self):
         return self.__tower_direction
@@ -502,6 +532,44 @@ class Torpedoboat(Enemy):
         return cls.param_dict
 
 
+class Torpedoboat2(Enemy):
+
+    param_dict = {
+        "hp":100,
+        "min_speed":140,
+        "max_speed":160,
+        "game_speed_multiplier":0.1,
+        "min_dist":100,
+        "has_torpedo":True,
+        "torpedo_type":2,
+        "torpedo_speed":0,
+        "torpedo_chance":0.4,
+        "points":100,
+        "damage":None,
+        "spawn_method":0,
+        "fixed_spawn":[(),None]
+    }
+
+    def __init__(self, px_per_second, origin, direction):
+
+        Enemy.__init__(self, self.param_dict["hp"], px_per_second, origin, direction)
+
+        #Handing over parameter dict to parent
+        self._param_dict = self.param_dict
+
+        #Setting image related parameters
+        self._image = pygame.image.load("./media/torpedoboat2.png")
+        if self._direction == 1:
+            self._image = pygame.transform.rotate(self._image, 180)
+        rect = self._image.get_rect()
+        self._image_size = rect[2], rect[3]
+        self._rect = pygame.Rect(self._position[0], self._position[1]-self._image_size[1]/2,
+                                 self._image_size[0], self._image_size[1])
+
+    @classmethod
+    def get_params(cls):
+        return cls.param_dict
+
 class Torpedo_0(Enemy):
 
     param_dict = {
@@ -529,6 +597,48 @@ class Torpedo_0(Enemy):
 
         #Setting image related parameters
         self._image = pygame.image.load("./media/torpedo1.png")
+        if self._direction == 0:
+            self._image = pygame.transform.rotate(self._image, 180)
+        rect = self._image.get_rect()
+        self._image_size = rect[2], rect[3]
+        self._rect = pygame.Rect(self._position[0], self._position[1]-self._image_size[1]/2,
+                                 self._image_size[0], self._image_size[1])
+
+    @classmethod
+    def get_params(cls):
+        return cls.param_dict
+
+    def get_damage(self):
+        return self._param_dict["damage"]
+
+
+class Torpedo_2(Enemy):
+
+    param_dict = {
+        "hp":100,
+        "min_speed":60,
+        "max_speed":60,
+        "game_speed_multiplier":0,
+        "min_dist":100,
+        "has_torpedo":False,
+        "torpedo_type":0,
+        "torpedo_speed":0,
+        "torpedo_chance":0,
+        "points":300,
+        "damage":100,
+        "spawn_method":None,
+        "fixed_spawn":[(),None]
+    }
+
+    def __init__(self, px_per_second, origin, direction):
+
+        Enemy.__init__(self, self.param_dict["hp"], px_per_second, origin, direction)
+
+        #Handing over the parameter dict to the parent class
+        self._param_dict = self.param_dict
+
+        #Setting image related parameters
+        self._image = pygame.image.load("./media/torpedo2.png")
         if self._direction == 0:
             self._image = pygame.transform.rotate(self._image, 180)
         rect = self._image.get_rect()
@@ -584,7 +694,6 @@ class Torpedo_1(Enemy):
 
     def get_damage(self):
         return self._param_dict["damage"]
-
 
 class Rowing_boat(Enemy):
 

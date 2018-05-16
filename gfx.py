@@ -339,6 +339,24 @@ class Destroyer_gfx(object):
 
         self.__screen.blit(self.__destroyer.get_image()[0], self.__destroyer.get_image()[1])
 
+        #Drawing the shoot power bar
+        shooting_power = self.__destroyer.get_shooting_power()
+        tower_dir = self.__destroyer.get_direction()
+        if 0 <= tower_dir < 90 or 270 < tower_dir < 360:
+            self.__screen.fill((255 - shooting_power*2.55, shooting_power*2.55, 0),
+                         (self.__window_size[0]/2 - 25, self.__window_size[1]/2 + 30,
+                          shooting_power/2, 3))
+            pygame.draw.rect(self.__screen, (0, 0, 0), \
+            (self.__window_size[0]/2 - 26, self.__window_size[1]/2 + 29,
+             shooting_power/2+1, 4),1)
+        else:
+            self.__screen.fill((255 - shooting_power*2.55, shooting_power*2.55, 0),
+                               (self.__window_size[0]/2 - 25, self.__window_size[1]/2 - 30,
+                                shooting_power/2, 3))
+            pygame.draw.rect(self.__screen, (0, 0, 0), \
+                             (self.__window_size[0]/2 - 26, self.__window_size[1]/2 - 31,
+                              shooting_power/2+1, 4),1)
+
         for b in self.__bullets.get_bullets():
             self.__screen.blit(b.get_image()[0], b.get_image()[1])
 
@@ -369,3 +387,5 @@ class Destroyer_gfx(object):
 
         pygame.display.update()
 
+    def get_screen(self):
+        return self.__screen

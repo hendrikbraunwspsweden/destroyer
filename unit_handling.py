@@ -25,16 +25,16 @@ class Enemies():
     """
 
     __ship_ratios_per_level = {
-        0:[(1,99), (99,100)],
-        1:[(1,2), (2,100)],
-        2:[(1,20), (20,100)],
-        3:[(1,20), (20,100)],
-        4:[(1,20), (20,100)],
-        5:[(1,20), (20,100)],
-        6:[(1,20), (20,100)],
-        7:[(1,20), (20,100)],
-        8:[(1,20), (20,100)],
-        9:[(1,20), (20,100)]
+        0:[(0,1), (1,60), (60,100)],
+        1:[(1,30), (30,60), (60,100)],
+        2:[(1,30), (30,60), (60,100)],
+        3:[(1,30), (30,60), (60,100)],
+        4:[(1,30), (30,60), (60,100)],
+        5:[(1,30), (30,60), (60,100)],
+        6:[(1,30), (30,60), (60,100)],
+        7:[(1,30), (30,60), (60,100)],
+        8:[(1,30), (30,60), (60,100)],
+        9:[(1,30), (30,60), (60,100)]
     }
 
     def __init__(self, wait_time_range, max_enemies, torpedos, crates, game_level, window_size, top_distance,
@@ -105,6 +105,8 @@ class Enemies():
                 ship = Submarine(speed, origin, direction)
             elif ship_type == 1 :
                 ship = Torpedoboat(speed, origin, direction)
+            elif ship_type == 2 :
+                ship = Torpedoboat2(speed,origin,direction)
             return ship
 
         def make_ship():
@@ -126,6 +128,8 @@ class Enemies():
                 param_dict = Submarine.get_params()
             elif ship_type == 1:
                 param_dict = Torpedoboat.get_params()
+            elif ship_type == 2:
+                param_dict = Torpedoboat2.get_params()
 
             speed = randrange(param_dict["min_speed"], param_dict["max_speed"], 1)
 
@@ -212,6 +216,9 @@ class Enemies():
                             if torpedo_type == 1:
                                 self.__torpedos.add_torpedo(Torpedo_1(Torpedo_1.get_params()["min_speed"],
                                                                       center_point,direction))
+                            if torpedo_type == 2:
+                                self.__torpedos.add_torpedo(Torpedo_2(Torpedo_2.get_params()["min_speed"],
+                                                                      center_point, direction))
                             e.set_torpedo_shot()
 
                 if e.get_direction() == 3:
@@ -332,7 +339,7 @@ class Bullets(object):
 class Crates(object):
 
     __wait_range_per_level = {
-        0:(1,5),
+        0:(10,40),
         1:(10,40),
         2:(30,40),
         3:(30,40),

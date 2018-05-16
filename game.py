@@ -19,9 +19,26 @@ import pygame
 import sys
 from units import *
 from gfx import *
+from menus import *
 from logic import *
 from unit_handling import *
 from time import sleep
+
+class Time_delta(object):
+    def __init__(self):
+        self.__old_time = datetime.datetime.now()
+        self.__new_time = self.__old_time
+        self.__delta = 0
+
+    def get_delta(self):
+        new_time = datetime.datetime.now()
+        self.__delta = (new_time-self.__old_time).total_seconds()
+        self.__old_time = new_time
+        return self.__delta
+
+    def reset_delta(self):
+        self.__old_time = datetime.datetime.now()
+        self.__delta = 0
 
 class Game_level(object):
     def __init__(self, init_level=0):
@@ -41,10 +58,10 @@ class Destroyer_game(object):
     time interval in seconds that is used when spawning the next enemy.
     """
     __game_level_breaks = {
-        0:5,
-        1:5,
-        2:5,
-        3:5,
+        0:20,
+        1:20,
+        2:20,
+        3:20,
         4:20,
         5:20,
         6:20,
@@ -54,29 +71,29 @@ class Destroyer_game(object):
     }
 
     __max_enemies = {
-        0:1,
-        1:15,
-        2:5,
-        3:5,
-        4:5,
-        5:5,
-        6:5,
-        7:5,
-        8:5,
-        9:5
+        0:5,
+        1:5,
+        2:6,
+        3:6,
+        4:7,
+        5:7,
+        6:8,
+        7:8,
+        8:10,
+        9:10
     }
 
     __enemy_wait_time_ranges = {
         0:(1,3),
         1:(1,3),
         2:(1,3),
-        3:(3,7),
-        4:(3,7),
-        5:(3,7),
-        6:(3,7),
-        7:(3,7),
-        8:(3,7),
-        9:(3,7),
+        3:(1,5),
+        4:(1,5),
+        5:(1,5),
+        6:(1,5),
+        7:(1,5),
+        8:(1,5),
+        9:(1,5),
     }
 
     def __init__(self, window_size=(1024,800), init_game_level=0, font_size=16):
@@ -104,13 +121,14 @@ class Destroyer_game(object):
         self.__max_enemies_ff = self.__max_enemies[init_game_level]
         self.__wait_time_range = self.__enemy_wait_time_ranges[init_game_level]
 
+        #Initializing all game objects
         pygame.init()
         pygame.font.init()
         game_level = Game_level(init_game_level)
         points = Points()
         texts = Texts()
         explosions = Explosions()
-        destroyer = Destroyer(0,500, 5000, self.__window_size)
+        destroyer = Destroyer(0,500, 1000, self.__window_size)
         bullets = Bullets((self.__window_size[0]/2, self.__window_size[1]/2), self.__window_size)
         torpedos = Torpedos()
         crates = Crates(self.__window_size, self.__font_size + 20, destroyer, game_level)
@@ -119,10 +137,17 @@ class Destroyer_game(object):
         crates.set_enemies(enemies)
         fades = Fades()
         enemies.add_enemy()
+
+        #Initializing game logic
         logic = Destroyer_logic(destroyer, enemies, bullets, torpedos, explosions, fades, texts, points, crates,
                                 self.__window_size)
+
+        #Initializing game graphics
         graphics = Destroyer_gfx(window_size, destroyer, enemies, bullets, torpedos, explosions, fades, texts, points,
                                  crates, game_level, font_size, "./media/background.png")
+
+        #Initializing game menus
+        ingame_menu = Ingame_menu(graphics.get_screen(), None)
 
         graphics.draw()
         exit_game = False
@@ -140,7 +165,7 @@ class Destroyer_game(object):
                     self.__next_level_in = self.__game_level_breaks[game_level.get_level()]
                     texts.add_text((window_size[0]/2, window_size[1]/2), "LEVEL UP!", font_size=20, positive=True)
 
-
+            destroyer.regenerate_power()
             enemies.add_enemy()
             enemies.move()
             enemies.shoot()
@@ -176,7 +201,8 @@ class Destroyer_game(object):
                     key = pygame.key.name(event.key)
 
                     if key == "escape":
-                        exit_game = True
+                        if ingame_menu.show() == 0:
+                            exit_game = True
 
 
             graphics.draw()
