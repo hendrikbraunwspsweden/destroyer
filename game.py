@@ -14,6 +14,8 @@
 # If not, see <http://www.gnu.org/licenses/>.                                                                          #
 ########################################################################################################################
 
+# Hallo :D Test!
+# Test LAptop
 
 #TODO: add global timer to graphical objects
 
