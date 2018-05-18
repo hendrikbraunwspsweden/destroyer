@@ -155,7 +155,7 @@ class Destroyer_game(object):
 
         #Initializing game menus
         kwargs = {"add_text":[0,"Hello","Hallo"]}
-        ingame_menu = Ingame_menu(graphics.get_screen(), "Titel", "Background", **kwargs)
+        ingame_menu = Ingame_menu(graphics.get_screen(), window_size, "Titel", "Background", **kwargs)
 
         graphics.draw()
         exit_game = False

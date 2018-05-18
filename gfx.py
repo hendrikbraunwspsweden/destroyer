@@ -18,7 +18,7 @@
 import pygame
 import datetime
 
-def blit_alpha(target, source, location, opacity):
+def blit_alpha(screen, image, rect, opacity):
 
     """
     Function for blit:ing objects with specified opacity onto the game window
@@ -26,13 +26,13 @@ def blit_alpha(target, source, location, opacity):
     :returns
     """
 
-    x = location[0]
-    y = location[1]
-    temp = pygame.Surface((source.get_width(), source.get_height())).convert()
-    temp.blit(target, (-x, -y))
-    temp.blit(source, (0, 0))
+    x = rect[0]
+    y = rect[1]
+    temp = pygame.Surface((image.get_width(), image.get_height())).convert()
+    temp.blit(screen, (-x, -y))
+    temp.blit(image, (0, 0))
     temp.set_alpha(opacity)
-    target.blit(temp, location)
+    screen.blit(temp, rect)
 
 class Fade_fx(object):
     def __init__(self, image, rect, time):
