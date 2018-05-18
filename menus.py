@@ -1,6 +1,7 @@
 import pygame
 import sys
 from time import sleep
+from gfx import blit_alpha
 
 
 class Menu(object):
@@ -10,8 +11,15 @@ class Menu(object):
         2:""
     }
 
-    def __init__(self, screen, background):
+    def paint(self):
+        self.__screen.blit()
+
+    def __init__(self, screen, title, background, **kwargs):
         self.__screen = screen
+        self.__title = title
+        self.__background = background
+
+        self.__add_text = (kwargs["add_text"],None)
 
     def show(self):
         option = 0
@@ -47,13 +55,16 @@ class Menu(object):
                     if key == "return":
                         exit = True
 
-
         return option
 
 class Ingame_menu(Menu):
     __entries={
-        0:"Exit"
+        0:"Settings",
+        1:"Return to game",
+        2:" ",
+        3:"Exit game"
     }
 
-    def __init__(self, screen, background):
-        Menu.__init__(self,screen, background)
+    def __init__(self, screen, title, background, **kwargs):
+        Menu.__init__(self,screen, title, background, **kwargs)
+

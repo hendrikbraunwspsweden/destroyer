@@ -157,7 +157,8 @@ class Destroyer_game(object):
                                  crates, game_level, font_size, "./media/background.png")
 
         #Initializing game menus
-        ingame_menu = Ingame_menu(graphics.get_screen(), None)
+        kwargs = {"add_text":[0,"Hello","Hallo"]}
+        ingame_menu = Ingame_menu(graphics.get_screen(), "Titel", "Background", **kwargs)
 
         graphics.draw()
         exit_game = False
