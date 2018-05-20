@@ -22,6 +22,7 @@ from menus import *
 from logic import *
 from unit_handling import *
 from time import sleep
+import datetime
 
 class Timer(object):
     def __init__(self):
@@ -125,6 +126,7 @@ class Destroyer_game(object):
         self.__next_level_in = self.__game_level_breaks[init_game_level]
         self.__max_enemies_ff = self.__max_enemies[init_game_level]
         self.__wait_time_range = self.__enemy_wait_time_ranges[init_game_level]
+        self.__screen = pygame.display.set_mode(window_size)
 
         #Initializing all game objects
         timer = Timer()
@@ -132,16 +134,16 @@ class Destroyer_game(object):
         pygame.font.init()
         game_level = Game_level(init_game_level)
         points = Points()
-        texts = Texts()
-        explosions = Explosions()
-        destroyer = Destroyer(0,500, 1000, self.__window_size)
+        texts = Texts(timer)
+        explosions = Explosions(timer)
+        destroyer = Destroyer(0,500, 500, self.__window_size)
         bullets = Bullets(timer, (self.__window_size[0]/2, self.__window_size[1]/2), self.__window_size)
         torpedos = Torpedos(timer)
         crates = Crates(timer, self.__window_size, self.__font_size + 20, destroyer, game_level)
         enemies = Enemies(timer, self.__wait_time_range, self.__max_enemies_ff, torpedos, crates, game_level,
                           self.__window_size, font_size)
         crates.set_enemies(enemies)
-        fades = Fades()
+        fades = Fades(timer)
         timer.start()
         enemies.add_enemy()
 
@@ -150,15 +152,17 @@ class Destroyer_game(object):
                                 self.__window_size)
 
         #Initializing game graphics
-        graphics = Destroyer_gfx(window_size, destroyer, enemies, bullets, torpedos, explosions, fades, texts, points,
+        graphics = Destroyer_gfx(self.__screen, destroyer, enemies, bullets, torpedos, explosions, fades, texts, points,
                                  crates, game_level, font_size, "./media/background.png")
 
         #Initializing game menus
         kwargs = {"add_text":[0,"Hello","Hallo"]}
-        ingame_menu = Ingame_menu(graphics.get_screen(), window_size, "Titel", "Background", **kwargs)
+        ingame_menu = Ingame_menu(self.__screen, window_size, "Titel", "Background", **kwargs)
 
         graphics.draw()
         exit_game = False
+        counter = 0
+        oldtime = datetime.datetime.now()
 
         while not exit_game:
 
@@ -208,18 +212,21 @@ class Destroyer_game(object):
                     key = pygame.key.name(event.key)
 
                     if key == "escape":
-                        if ingame_menu.show() == 0:
+                        if ingame_menu.show() == 2:
                             exit_game = True
                         else:
                             timer.reset()
 
 
             graphics.draw()
-            #sleep(0.005)
-            #screen.fill(black)
-            #screen.blit(ball, ballrect)
-            #pygame.display.flip()
             timer.time()
+            new_time = datetime.datetime.now()
+            if (new_time-oldtime).total_seconds() >= 1:
+                print(counter)
+                counter=0
+                oldtime = new_time
+            else:
+                counter += 1
 
     def __del__(self):
         pass

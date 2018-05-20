@@ -138,22 +138,22 @@ class Destroyer_logic(object):
             if enemies[i].get_direction() == 0:
                 if rect[1] <= 0:
                     enemies_remove_list.append(i)
-                    self.__points.reduce_points(enemies[i].get_params()["points"]/2)
+                    self.__points.reduce_points(enemies[i].get_params()["points"])
 
             if enemies[i].get_direction() == 1:
                 if rect[0] >= self.__window_size[0]:
                     enemies_remove_list.append(i)
-                    self.__points.reduce_points(enemies[i].get_params()["points"]/2)
+                    self.__points.reduce_points(enemies[i].get_params()["points"])
 
             if enemies[i].get_direction() == 2:
                 if rect[1] > self.__window_size:
                     enemies_remove_list.append(i)
-                    self.__points.reduce_points(enemies[i].get_params()["points"]/2)
+                    self.__points.reduce_points(enemies[i].get_params()["points"])
 
             if enemies[i].get_direction() == 3:
                 if rect[2] <= 0:
                     enemies_remove_list.append(i)
-                    self.__points.reduce_points(enemies[i].get_params()["points"]/2)
+                    self.__points.reduce_points(enemies[i].get_params()["points"])
         return enemies_remove_list
 
     def __check_torpedos(self):

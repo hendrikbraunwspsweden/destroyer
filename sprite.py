@@ -44,8 +44,20 @@ class Sprite(object):
         else:
             blit_alpha(screen, self._image, self._rect, opacity)
 
+    def get_image(self):
+        return self._image
+
+    def get_rect(self):
+        return self._rect
+
     def get_size(self):
         return self._x_size, self._y_size
+
+    def get_pos(self):
+        return self._x, self._y
+
+    def set_rect(self, rect):
+        self._rect = rect
 
     @classmethod
     def from_text(cls, text, x=0,y=0, font_name="Arial", font_size=20, color=(255,255,255)):

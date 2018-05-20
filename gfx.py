@@ -59,14 +59,12 @@ class Fade_fx(object):
         self._total_time = 0
         self._alpha = 255
 
-    def fade(self):
+    def fade(self, time_delta):
         if self._alpha < 0:
             return -1
         else:
-            new_time = datetime.datetime.now()
-            self._total_time += (new_time - self._old_time).total_seconds()
+            self._total_time += time_delta
             self._alpha = 255 - self._steps * self._total_time
-        self._old_time = new_time
         return 0
 
     def get_image(self):
@@ -77,13 +75,14 @@ class Fade_fx(object):
 
 
 class Fades(object):
-    def __init__(self):
+    def __init__(self, timer):
 
         """
         Class for managing all the fades in the game window
         """
 
         self.__fade_list = []
+        self.__timer = timer
 
     def add_fade(self, image, rect, time):
         self.__fade_list.append(Fade_fx(image, rect, time))
@@ -91,7 +90,7 @@ class Fades(object):
     def fade(self):
         new_fades = []
         for i in range(len(self.__fade_list)):
-            if not self.__fade_list[i].fade() == -1:
+            if not self.__fade_list[i].fade(self.__timer.get_delta()) == -1:
                 new_fades.append(self.__fade_list[i])
         self.__fade_list = new_fades
 
@@ -120,7 +119,6 @@ class Text_fx(object):
         self._alpha_steps = 255.0/self._time
         self._steps = self._movement/float(self._time)
         self._origin = origin
-        self._old_time = datetime.datetime.now()
         self._time_delta = 0
         self._alpha = 255
         self._color = (0,0,0)
@@ -137,16 +135,14 @@ class Text_fx(object):
         self._position = (self._origin[0] - (self._size_x/2), self._origin[1] - (self._size_y/2))
         self._rect = (self._position[0], self._position[1], self._size_x, self._size_y)
 
-    def move(self):
+    def move(self, time_delta):
         if self._alpha < 0:
             return -1
         else:
-            new_time = datetime.datetime.now()
-            self._time_delta += (new_time - self._old_time).total_seconds() * 1000
+            self._time_delta += time_delta * 1000
             self._alpha = 255 - self._alpha_steps * self._time_delta
             self._position = (self._position[0], round(self._origin[1] - self._steps * self._time_delta, 0))
             self._rect = pygame.Rect(self._position[0], self._position[1], self._size_x, self._size_y)
-        self._old_time = new_time
         return 0
 
     def get_image(self):
@@ -155,14 +151,16 @@ class Text_fx(object):
     def get_alpha(self):
         return self._alpha
 
+
 class Texts(object):
 
     """
     Class holding all text effect objects in the game
     """
 
-    def __init__(self):
+    def __init__(self, timer):
         self.__text_list = []
+        self.__timer = timer
 
     def add_text(self, origin, text, positive=True, font_size=16):
         self.__text_list.append(Text_fx(origin, text, 1000, 80, font_size=font_size, positive=positive))
@@ -170,7 +168,7 @@ class Texts(object):
     def move(self):
         new_texts = []
         for i in range(len(self.__text_list)):
-            if not self.__text_list[i].move() == -1:
+            if not self.__text_list[i].move(self.__timer.get_delta()) == -1:
                 new_texts.append(self.__text_list[i])
         self.__text_list = new_texts
 
@@ -196,20 +194,21 @@ class Explosion(object):
         self.__old_time = datetime.datetime.now()
         self.__rect = pygame.Rect(origin[0]-63, origin[1]-132, 62, 132)
         self.__pause = pause
+        self.__total_time_delta = 0
 
-    def next_frame(self):
+    def next_frame(self, timer):
 
         """
         Method to walk through the frames and change image if the specified pause time has elapsed. If the explosion
         sequence is finished, it returns True, otherwise False.
         """
 
-        new_time = datetime.datetime.now()
+        self.__total_time_delta += timer.get_delta()
         if self.__frame > 17:
             return True
-        if (new_time - self.__old_time).total_seconds()*1000 >= self.__pause:
+        if self.__total_time_delta*1000 >= self.__pause:
             self.__image = pygame.image.load("./media/explosion/frame_{}.png".format(self.__frame))
-            self.__old_time = new_time
+            self.__total_time_delta = 0
             self.__frame += 1
         return False
 
@@ -223,8 +222,9 @@ class Explosions(object):
     Class holding all instances of explosion objects in the game.
     """
 
-    def __init__(self):
+    def __init__(self, timer):
         self.__explosion_list = []
+        self.__timer = timer
 
     def add_explosion(self, explosion):
         self.__explosion_list.append(explosion)
@@ -232,7 +232,7 @@ class Explosions(object):
     def change_frames(self):
         new_list = []
         for e in self.__explosion_list:
-            if not e.next_frame():
+            if not e.next_frame(self.__timer):
                 new_list.append(e)
         self.__explosion_list = new_list
 
@@ -242,7 +242,7 @@ class Explosions(object):
 
 class Destroyer_gfx(object):
 
-    def __init__(self, window_size, destroyer, enemies, bullets, torpedos, explosions, fades, texts, points, crates,
+    def __init__(self, screen, destroyer, enemies, bullets, torpedos, explosions, fades, texts, points, crates,
                  game_level, font_size, bg_image):
 
         """
@@ -269,9 +269,9 @@ class Destroyer_gfx(object):
         self.__bullets = bullets
         self.__torpedos = torpedos
         self.__fades = fades
-        self.__screen = pygame.display.set_mode(window_size)
+        self.__screen = screen
         self.__background_path = bg_image
-        self.__window_size = window_size
+        self.__window_size = self.__screen.get_size()
         self.__explosions = explosions
         self.__points = points
         self.__texts = texts
@@ -279,6 +279,8 @@ class Destroyer_gfx(object):
         self.__crates = crates
         self.__game_level = game_level
         self.make_background()
+
+        print self.__screen
 
     def __render_hud(self):
 
