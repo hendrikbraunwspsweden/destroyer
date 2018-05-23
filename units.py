@@ -103,16 +103,17 @@ def get_bearing(point_1, point_2):
         return 90
 
     if delta_y < 0 < delta_x:
-        return degrees(atan((point_2[0] - point_1[0])/-(point_2[1] - point_1[1]))), distance
+        return abs(degrees(atan((point_2[0] - point_1[0])/-(point_2[1] - point_1[1])))), distance
 
     elif delta_x > 0 and delta_y > 0:
-        return 180 + degrees(atan((point_2[0] - point_1[0])/-(point_2[1] - point_1[1]))), distance
+        return abs(180 + degrees(atan((point_2[0] - point_1[0])/-(point_2[1] - point_1[1])))), distance
 
     elif delta_x < 0 < delta_y:
-        return 180 + degrees(atan((point_2[0] - point_1[0])/-(point_2[1] - point_1[1]))), distance
+        return abs(180 + degrees(atan((point_2[0] - point_1[0])/-(point_2[1] - point_1[1])))), distance
 
     elif delta_x < 0 and delta_y < 0:
-        return 360 + degrees(atan((point_2[0] - point_1[0])/-(point_2[1] - point_1[1]))), distance
+        return abs(360 + degrees(atan((point_2[0] - point_1[0])/-(point_2[1] - point_1[1])))), distance
+
 
 class Destroyer(object):
 
@@ -264,6 +265,7 @@ class Destroyer(object):
     def get_max_hp(self):
         return self.__max_hp
 
+
 class Enemy(object):
 
     _param_dict = {
@@ -276,6 +278,9 @@ class Enemy(object):
         "torpedo_type":None,
         "torpedo_speed":None,
         "torpedo_chance":None,
+        "has_gun":None,
+        "gun_type": None,
+        "gun_interval":None,
         "points":None,
         "damage":None,
         "spawn_method":None,
@@ -333,6 +338,7 @@ class Enemy(object):
         self._rect = None
         self._has_torpedo = None
         self._torpedo_shot = False
+        self._gun_time_delta = 0
 
     def get_rect(self):
         rect = pygame.Rect(self._position[0], self._position[1], self._position[0] + self._rect[2], self._position[1] + \
@@ -418,6 +424,17 @@ class Enemy(object):
         else:
             return False
 
+    def get_gun_type(self):
+        return self._param_dict["gun_type"]
+
+    def shoot(self, time_delta):
+        self._gun_time_delta += time_delta
+        if self._param_dict["has_gun"]:
+            if self._gun_time_delta >= self._param_dict["gun_interval"]:
+                self._gun_time_delta = 0
+                return True
+        return False
+
     def set_torpedo_shot(self):
         self._torpedo_shot = True
 
@@ -462,6 +479,9 @@ class Submarine(Enemy):
         "torpedo_type":1,
         "torpedo_speed":30,
         "torpedo_chance":0.6,
+        "has_gun":None,
+        "gun_type": None,
+        "gun_interval":None,
         "points":100,
         "damage":None,
         "spawn_method":0,
@@ -502,6 +522,9 @@ class Torpedoboat(Enemy):
         "torpedo_type":0,
         "torpedo_speed":0,
         "torpedo_chance":0.4,
+        "has_gun":None,
+        "gun_type": None,
+        "gun_interval":None,
         "points":100,
         "damage":None,
         "spawn_method":0,
@@ -541,6 +564,9 @@ class Torpedoboat2(Enemy):
         "torpedo_type":2,
         "torpedo_speed":0,
         "torpedo_chance":0.4,
+        "has_gun":True,
+        "gun_type": 0,
+        "gun_interval":2,
         "points":100,
         "damage":None,
         "spawn_method":0,
@@ -579,6 +605,9 @@ class Torpedo_0(Enemy):
         "torpedo_type":0,
         "torpedo_speed":0,
         "torpedo_chance":0,
+        "has_gun":None,
+        "gun_type": None,
+        "gun_interval":None,
         "points":300,
         "damage":50,
         "spawn_method":0,
@@ -621,6 +650,9 @@ class Torpedo_2(Enemy):
         "torpedo_type":0,
         "torpedo_speed":0,
         "torpedo_chance":0,
+        "has_gun":None,
+        "gun_type": None,
+        "gun_interval":None,
         "points":300,
         "damage":100,
         "spawn_method":None,
@@ -663,6 +695,9 @@ class Torpedo_1(Enemy):
         "torpedo_type":0,
         "torpedo_speed":0,
         "torpedo_chance":0,
+        "has_gun":None,
+        "gun_type": None,
+        "gun_interval":None,
         "points":300,
         "damage":100,
         "spawn_method":None,
@@ -692,6 +727,7 @@ class Torpedo_1(Enemy):
     def get_damage(self):
         return self._param_dict["damage"]
 
+
 class Rowing_boat(Enemy):
 
     param_dict = {
@@ -704,6 +740,9 @@ class Rowing_boat(Enemy):
         "torpedo_type":0,
         "torpedo_speed":0,
         "torpedo_chance":0,
+        "has_gun":None,
+        "gun_type": None,
+        "gun_interval":None,
         "points":300,
         "damage":50,
         "spawn_method":1,
@@ -733,44 +772,36 @@ class Rowing_boat(Enemy):
 
 
 class Bullet(object):
+    _param_dict = {
+        "speed":None,
+        "damage":None
+    }
 
-    def __init__(self, timer, type, power, origin, direction, px_per_second):
+    def __init__(self, timer, origin, direction):
 
         """
         Base class for bullets.
         :param timer        : game timer instance
         :param type         : bullet type
-        :param power        : damage done to the enemy on bullet impact
+        :param damage        : damage done to the enemy on bullet impact
         :param origin       : bullet origin as x,y. Usually the center of the game window
         :param direction    : direction of the bullet as bearing, between 0 and 360 (north)
         :param px_per_second: bullet speed as pixels per second
         :type type          : int
-        :type power         : int
+        :type damage         : int
         :type origin        : set
         :type direction     : int
         :type px_per_second : int
 
         :returns:
         """
-        self.__timer = timer
-        self.__type = type
-        self.__power = power
-        self.__position = list(origin)
-        self.__direction = direction
-        self.__old_time = datetime.datetime.now()
-        self.__px_per_second = px_per_second
-        self.__original_time = datetime.datetime.now()
-        self.__image = None
-
-        if type == 0:
-            self.__image = pygame.image.load("./media/bullet1.png")
-
-        self.__image = pygame.transform.rotate(self.__image, - self.__direction)
-        rect = self.__image.get_rect()
-        self.__image_size = rect[2], rect[3]
-
-        self.__rect = pygame.Rect(self.__position[0]-self.__image_size[0]/2, self.__position[1] - self.__image_size[1]/2,
-                                  self.__image_size[0], self.__image_size[1])
+        self._timer = timer
+        self._position = list(origin)
+        self._direction = direction
+        self._image = None
+        self._is_friendly = None
+        self._speed = None
+        self._damage = None
 
     def move(self):
 
@@ -781,25 +812,68 @@ class Bullet(object):
         :returns:
         """
 
-        time_delta = self.__timer.get_delta()
-        vector_delta = floor(time_delta * self.__px_per_second)
+        time_delta = self._timer.get_delta()
+        vector_delta = floor(time_delta * self._speed)
 
-        self.__position = project_point(self.__position[0], self.__position[1], self.__direction, vector_delta)
+        self._position = project_point(self._position[0], self._position[1], self._direction, vector_delta)
 
-        self.__rect = pygame.Rect(self.__position[0]-self.__image_size[0]/2, self.__position[1] - self.__image_size[1]/2,
-                                  self.__image_size[0], self.__image_size[1])
+        self._rect = pygame.Rect(self._position[0] - self._image_size[0] / 2, self._position[1] - self._image_size[1] / 2,
+                                  self._image_size[0], self._image_size[1])
 
     def get_position(self):
-        return [int(floor(self.__position[0])), int(floor(self.__position[1]))]
+        return [int(floor(self._position[0])), int(floor(self._position[1]))]
 
     def __del__(self):
         pass
 
     def get_image(self):
-        return self.__image, self.__rect
+        return self._image, self._rect
 
-    def get_power(self):
-        return self.__power
+    def get_damage(self):
+        return self._damage
+
+    def is_friendly(self):
+        return self._is_friendly
+
+class Destroyer_bullet_1(Bullet):
+    _param_dict = {
+        "speed":800,
+        "damage":100
+    }
+
+    def __init__(self, timer, origin, direction):
+        Bullet.__init__(self, timer, origin, direction)
+        self._image = pygame.image.load("./media/bullet1.png")
+        self._is_friendly = True
+        self._damage = self._param_dict["damage"]
+        self._speed = self._param_dict["speed"]
+
+        self._image = pygame.transform.rotate(self._image, - self._direction)
+        rect = self._image.get_rect()
+        self._image_size = rect[2], rect[3]
+
+        self._rect = pygame.Rect(self._position[0] - self._image_size[0] / 2, self._position[1] - self._image_size[1] / 2,
+                                  self._image_size[0], self._image_size[1])
+
+class Standard_enemy_bullet(Bullet):
+    _param_dict = {
+        "speed":800,
+        "damage":50
+    }
+
+    def __init__(self, timer,origin, direction):
+        Bullet.__init__(self, timer, origin, direction)
+        self._image = pygame.image.load("./media/canonball.png")
+        self._damage = self._param_dict["damage"]
+        self._speed = self._param_dict["speed"]
+        self._is_friendly = False
+
+        self._image = pygame.transform.rotate(self._image, - self._direction)
+        rect = self._image.get_rect()
+        self._image_size = rect[2], rect[3]
+
+        self._rect = pygame.Rect(self._position[0] - self._image_size[0] / 2, self._position[1] - self._image_size[1] / 2,
+                                 self._image_size[0], self._image_size[1])
 
 class Crate(object):
     def __init__(self, origin, return_points, crate_type, effect_points=100):

@@ -37,8 +37,8 @@ class Enemies():
         9:[(1,30), (30,60), (60,100)]
     }
 
-    def __init__(self, timer, wait_time_range, max_enemies, torpedos, crates, game_level, window_size, top_distance,
-                 max_torpedos=2):
+    def __init__(self, timer, wait_time_range, max_enemies, torpedos, crates, bullets,  game_level, window_size,
+                 top_distance, max_torpedos=2):
         """
         Class for handling all enemy ship objects.
         :param wait_time_range  : range of minimum wait time to maximum wait time for spawn of next enemy
@@ -71,6 +71,7 @@ class Enemies():
         self.__game_level = game_level
         self.__ship_ratios = self.__ship_ratios_per_level[self.__game_level.get_level()]
         self.__torpedos = torpedos
+        self.__bullets = bullets
         self.__crates = crates
         self.__top_distance = top_distance
         self.__max_torpedos = max_torpedos
@@ -209,6 +210,7 @@ class Enemies():
                                 direction = 0
 
                             torpedo_type = e.get_params()["torpedo_type"]
+
                             if torpedo_type == 0:
                                 self.__torpedos.add_torpedo(Torpedo_0(Torpedo_0.get_params()["min_speed"],
                                                                       center_point,direction))
@@ -239,6 +241,12 @@ class Enemies():
                                 self.__torpedos.add_torpedo(Torpedo_1(Torpedo_1.get_params()["min_speed"],
                                                                       center_point,direction))
                             e.set_torpedo_shot()
+
+            if e.shoot(self.__timer.get_delta()):
+                if e.get_gun_type() == 0:
+                    bearing = get_bearing(e.get_center_point(), (self.__window_size[0]/2, self.__window_size[1]/2))[0]
+                    print(e.get_center_point(), (self.__window_size[0]/2, self.__window_size[1]/2))
+                    self.__bullets.add_bullet(Standard_enemy_bullet(self.__timer, e.get_center_point(), bearing))
 
 
     def get_enemies(self):
@@ -313,8 +321,8 @@ class Bullets(object):
         self.__window_size = window_size
         self.__bullet_list = []
 
-    def add_bullet(self, timer, type, power, direction, speed):
-        self.__bullet_list.append(Bullet(timer, type, power, self.__origin, direction, speed))
+    def add_bullet(self, bullet):
+        self.__bullet_list.append(bullet)
 
     def move(self):
         pop_list = []
