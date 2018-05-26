@@ -14,7 +14,7 @@
 # If not, see <http://www.gnu.org/licenses/>.                                                                          #
 ########################################################################################################################
 
-from math import sin, cos, radians, sqrt, atan, degrees
+from math import sin, asin, cos, radians, sqrt, atan, degrees
 import pygame
 import datetime
 from math import floor
@@ -84,12 +84,14 @@ def get_bearing(point_1, point_2):
     :param point_2: coorindate of second point as set(x,y)
     :return: bearing as int, distance as int
     """
-    delta_x = point_2[0] - point_1[0]
-    delta_y = point_2[1] - point_1[1]
+    delta_x = (point_2[0] - point_1[0])
+    delta_y = (point_2[1] - point_1[1])
 
     print(delta_x, delta_y)
 
     distance = sqrt(pow(delta_x, 2)+pow(delta_y, 2))
+
+    print(distance)
 
     if delta_x == 0 and delta_y == 0:
         return 0,0
@@ -103,17 +105,16 @@ def get_bearing(point_1, point_2):
         return 90
 
     if delta_y < 0 < delta_x:
-        return abs(degrees(atan((point_2[0] - point_1[0])/-(point_2[1] - point_1[1])))), distance
+        return degrees(asin(delta_x/distance)),distance
 
     elif delta_x > 0 and delta_y > 0:
-        return abs(180 + degrees(atan((point_2[0] - point_1[0])/-(point_2[1] - point_1[1])))), distance
+        return 180 - degrees(asin(delta_x/distance)), distance
 
     elif delta_x < 0 < delta_y:
-        return abs(180 + degrees(atan((point_2[0] - point_1[0])/-(point_2[1] - point_1[1])))), distance
+        return 180 - degrees(asin(delta_x/distance)), distance
 
     elif delta_x < 0 and delta_y < 0:
-        return abs(360 + degrees(atan((point_2[0] - point_1[0])/-(point_2[1] - point_1[1])))), distance
-
+        return 360 + degrees(asin(delta_x/distance)), distance
 
 class Destroyer(object):
 
