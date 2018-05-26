@@ -93,16 +93,16 @@ class Destroyer_game(object):
         0:(1,3),
         1:(1,3),
         2:(1,3),
-        3:(1,5),
-        4:(1,5),
-        5:(1,5),
-        6:(1,5),
-        7:(1,5),
-        8:(1,5),
-        9:(1,5),
+        3:(1,3),
+        4:(1,3),
+        5:(1,3),
+        6:(1,2),
+        7:(1,2),
+        8:(1,2),
+        9:(1,2),
     }
 
-    def __init__(self, window_size=(1024,800), init_game_level=0, font_size=16):
+    def __init__(self, window_size=(1024, 800), init_game_level=0, font_size=16):
         """
         Main class for the game creating and managing all game object class instances.
 
@@ -127,13 +127,16 @@ class Destroyer_game(object):
         self.__next_level_in = self.__game_level_breaks[init_game_level]
         self.__max_enemies_ff = self.__max_enemies[init_game_level]
         self.__wait_time_range = self.__enemy_wait_time_ranges[init_game_level]
+        self.__init_game_level = init_game_level
+        self.__font_size = font_size
         self.__screen = pygame.display.set_mode(window_size)
 
+    def run(self):
         #Initializing all game objects
         timer = Timer()
         pygame.init()
         pygame.font.init()
-        game_level = Game_level(init_game_level)
+        game_level = Game_level(self.__init_game_level)
         points = Points()
         texts = Texts(timer)
         explosions = Explosions(timer)
@@ -142,7 +145,7 @@ class Destroyer_game(object):
         torpedos = Torpedos(timer)
         crates = Crates(timer, self.__window_size, self.__font_size + 20, destroyer, game_level)
         enemies = Enemies(timer, self.__wait_time_range, self.__max_enemies_ff, torpedos, crates, bullets, game_level,
-                          self.__window_size, font_size)
+                          self.__window_size, self.__font_size)
         crates.set_enemies(enemies)
         fades = Fades(timer)
         timer.start()
@@ -154,11 +157,11 @@ class Destroyer_game(object):
 
         #Initializing game graphics
         graphics = Destroyer_gfx(self.__screen, destroyer, enemies, bullets, torpedos, explosions, fades, texts, points,
-                                 crates, game_level, font_size, "./media/background.png")
+                                 crates, game_level, self.__font_size, "./media/background.png")
 
         #Initializing game menus
         kwargs = {"add_text":[0,"Hello","Hallo"]}
-        ingame_menu = Ingame_menu(self.__screen, window_size, "Titel", "Background", **kwargs)
+        ingame_menu = Ingame_menu(self.__screen, self.__window_size, "Titel", "Background", **kwargs)
 
         graphics.draw()
         exit_game = False
@@ -175,7 +178,8 @@ class Destroyer_game(object):
                     enemies.set_max_enemies(self.__max_enemies[game_level.get_level()])
                     enemies.set_wait_time_range(self.__enemy_wait_time_ranges[game_level.get_level()])
                     self.__next_level_in = self.__game_level_breaks[game_level.get_level()]
-                    texts.add_text((window_size[0]/2, window_size[1]/2), "LEVEL UP!", font_size=20, positive=True)
+                    texts.add_text((self.__window_size[0]/2, self.__window_size[1]/2),
+                                   "LEVEL UP!", font_size=50, positive=True)
 
             destroyer.regenerate_power()
             enemies.add_enemy()
@@ -188,11 +192,12 @@ class Destroyer_game(object):
             texts.move()
             crates.make_crate(timer)
             crates.check()
+            logic.check()
 
             self.__total_enemies = enemies.get_total_enemies()
 
-            if logic.check():
-                sys.exit()
+            if destroyer.get_hp() <= 0:
+                return True
 
             keys = pygame.key.get_pressed()
 
@@ -223,7 +228,6 @@ class Destroyer_game(object):
             timer.time()
             new_time = datetime.datetime.now()
             if (new_time-oldtime).total_seconds() >= 1:
-                print(counter)
                 counter=0
                 oldtime = new_time
             else:

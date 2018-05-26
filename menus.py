@@ -108,5 +108,5 @@ class Ingame_menu(Menu):
     }
 
     def __init__(self, screen, size, title, background, **kwargs):
-        Menu.__init__(self,screen, size, title, background, option = 2, **kwargs)
+        Menu.__init__(self,screen, size, title, background, option = 1, **kwargs)
 

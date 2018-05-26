@@ -29,12 +29,12 @@ class Enemies():
     """
 
     __ship_ratios_per_level = {
-        0:[(1,30), (30,50), (50,100)],
-        1:[(1,30), (30,60), (60,100)],
-        2:[(1,30), (30,60), (60,100)],
-        3:[(1,30), (30,60), (60,100)],
-        4:[(1,30), (30,60), (60,100)],
-        5:[(1,30), (30,60), (60,100)],
+        0:[(1,30), (30,40), (40,100)],
+        1:[(1,30), (30,40), (40,100)],
+        2:[(1,30), (30,45), (45,100)],
+        3:[(1,30), (30,45), (45,100)],
+        4:[(1,30), (30,45), (45,100)],
+        5:[(1,30), (30,50), (50,100)],
         6:[(1,30), (30,60), (60,100)],
         7:[(1,30), (30,60), (60,100)],
         8:[(1,30), (30,60), (60,100)],
@@ -42,7 +42,7 @@ class Enemies():
     }
 
     def __init__(self, timer, wait_time_range, max_enemies, torpedos, crates, bullets,  game_level, window_size,
-                 top_distance, max_torpedos=2):
+                 top_distance, max_torpedos=1):
         """
         Class for handling all enemy ship objects.
         :param wait_time_range  : range of minimum wait time to maximum wait time for spawn of next enemy
