@@ -129,7 +129,7 @@ class Text_fx(object):
             self._color = (190,28,28)
 
         myfont = pygame.font.SysFont('Arial', self._font_size)
-        self._image = myfont.render(self._text, False, self._color)
+        self._image = myfont.render(self._text, True, self._color)
         rect = self._image.get_rect()
         self._size_x, self._size_y = rect[2], rect[3]
         self._position = (self._origin[0] - (self._size_x/2), self._origin[1] - (self._size_y/2))
@@ -280,8 +280,6 @@ class Destroyer_gfx(object):
         self.__game_level = game_level
         self.make_background()
 
-        print self.__screen
-
     def __render_hud(self):
 
         """
@@ -293,14 +291,14 @@ class Destroyer_gfx(object):
         rect = pygame.Rect(0,0,self.__window_size[0],self.__font_size)
         pygame.draw.rect(self.__screen, (150,150,150), rect, 0)
 
-        points = myfont.render('Points: {}'.format(self.__points.get_points()), False, (255, 255, 255))
+        points = myfont.render('Points: {}'.format(self.__points.get_points()), True, (255, 255, 255))
         self.__screen.blit(points, (0,0))
 
         hp_ratio = self.__destroyer.get_hp() / float(self.__destroyer.get_max_hp())
-        hp = myfont.render('Life: {}'.format(self.__destroyer.get_hp()), False, (255, 255*hp_ratio,255*hp_ratio))
+        hp = myfont.render('Life: {}'.format(self.__destroyer.get_hp()), True, (255, 255*hp_ratio,255*hp_ratio))
         self.__screen.blit(hp, (100,0))
 
-        level = myfont.render("Level: {}".format(self.__game_level.get_level() +1), False, (255,255,255))
+        level = myfont.render("Level: {}".format(self.__game_level.get_level() +1), True, (255,255,255))
         size_x = level.get_rect()[2]
         self.__screen.blit(level, (self.__window_size[0] - size_x - 10, 0))
 

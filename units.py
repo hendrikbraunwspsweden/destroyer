@@ -87,11 +87,7 @@ def get_bearing(point_1, point_2):
     delta_x = (point_2[0] - point_1[0])
     delta_y = (point_2[1] - point_1[1])
 
-    print(delta_x, delta_y)
-
     distance = sqrt(pow(delta_x, 2)+pow(delta_y, 2))
-
-    print(distance)
 
     if delta_x == 0 and delta_y == 0:
         return 0,0
@@ -864,7 +860,7 @@ class Destroyer_bullet_1(Bullet):
 
     def __init__(self, timer, origin, direction):
         Bullet.__init__(self, timer, origin, direction)
-        self._image = pygame.image.load("./media/bullet1.png")
+        self._image = pygame.image.load("./media/missile1.png")
 
         self._is_friendly = self._param_dict["is_friendly"]
         self._damage = self._param_dict["damage"]
@@ -880,7 +876,7 @@ class Destroyer_bullet_1(Bullet):
 class Standard_enemy_bullet(Bullet):
     _param_dict = {
         "speed":800,
-        "damage":5,
+        "damage":10,
         "is_friendly":False
     }
 

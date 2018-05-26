@@ -128,8 +128,7 @@ class Destroyer_logic(object):
                     self.__explosions.add_explosion(Explosion(bullet_list[b].get_position(), 20))
                     self.__texts.add_text(bullet_list[b].get_position(), "-{}".
                                           format(bullet_list[b].get_damage(), positive=False))
-                    if self.__destroyer.reduce_hp(bullet_list[b].get_damage()):
-                        destroyer_destroyed = True
+                    self.__destroyer.reduce_hp(bullet_list[b].get_damage())
         return bullet_remove_list, enemy_remove_list
 
     def __check_enemies(self):
@@ -175,7 +174,6 @@ class Destroyer_logic(object):
 
         torpedos_remove_list = []
         torpedo_list = self.__torpedos.get_torpedos()
-        destroyer_destroyed = False
         for i in range(len(self.__torpedos.get_torpedos())):
             rect = torpedo_list[i].get_rect()
 
@@ -184,8 +182,7 @@ class Destroyer_logic(object):
                 self.__explosions.add_explosion(Explosion(torpedo_list[i].get_position(), 20))
                 self.__texts.add_text(torpedo_list[i].get_position(), "-{}".
                                       format(torpedo_list[i].get_params()["points"]), positive = False)
-                if self.__destroyer.reduce_hp(self.__torpedos.get_torpedos()[i].get_damage()):
-                    destroyer_destroyed = True
+                self.__destroyer.reduce_hp(self.__torpedos.get_torpedos()[i].get_damage())
 
             elif torpedo_list[i].get_direction() == 0:
                 if rect[1] <= 0:
@@ -199,7 +196,7 @@ class Destroyer_logic(object):
             elif torpedo_list[i].get_direction() == 3:
                 if rect[2] <= 0:
                     torpedos_remove_list.append(i)
-        return torpedos_remove_list, destroyer_destroyed
+        return torpedos_remove_list
 
     def __check_bullets_torpedos(self):
 
@@ -288,7 +285,7 @@ class Destroyer_logic(object):
         bullet_remove_list_1 = self.__check_bullets()
         bullet_remove_list_2, enemy_remove_list_1 = self.__check_bullets_enemies()
         enemy_remove_list_2 = self.__check_enemies()
-        torpedo_remove_list_1, destroyer_destroyed = self.__check_torpedos()
+        torpedo_remove_list_1 = self.__check_torpedos()
         bullet_remove_list_3, torpedo_remove_list_2 = self.__check_bullets_torpedos()
         bullet_remove_list_4, crate_remove_list_1 = self.__check_bullets_crates()
         crate_remove_list_2 = self.__check_enemies_crates()
@@ -310,8 +307,4 @@ class Destroyer_logic(object):
         #Add the number of enemies sunk in this round to the total count
         self.__enemies.inc_sunk_count(len(enemy_remove_list_1))
 
-        if destroyer_destroyed:
-            return True
-        else:
-            return False
 

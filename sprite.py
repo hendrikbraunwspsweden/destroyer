@@ -62,5 +62,5 @@ class Sprite(object):
     @classmethod
     def from_text(cls, text, x=0,y=0, font_name="Arial", font_size=20, color=(255,255,255)):
         myfont = pygame.font.SysFont(font_name, font_size)
-        image = myfont.render(text, False, color)
+        image = myfont.render(text, True, color)
         return Sprite(image, x,y)

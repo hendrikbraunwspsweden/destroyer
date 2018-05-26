@@ -15,6 +15,9 @@
 ########################################################################################################################
 
 from game import *
+import sys
 
 if __name__ == "__main__":
     myGame = Destroyer_game()
+    if myGame.run():
+        sys.exit()
