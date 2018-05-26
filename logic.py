@@ -123,8 +123,13 @@ class Destroyer_logic(object):
                             self.__texts.add_text(bullet_list[b].get_position(), "+{}".
                                                   format(enemy_list[e].get_params()["points"]))
             else:
-                #PROCESS ENEMY BULLETS AND COLLISIONS WITH DESTROYER
-                pass
+                if bullet_list[b].get_image()[1].colliderect(self.__destroyer.get_image()[1]):
+                    bullet_remove_list.append(b)
+                    self.__explosions.add_explosion(Explosion(bullet_list[b].get_position(), 20))
+                    self.__texts.add_text(bullet_list[b].get_position(), "-{}".
+                                          format(bullet_list[b].get_damage(), positive=False))
+                    if self.__destroyer.reduce_hp(bullet_list[b].get_damage()):
+                        destroyer_destroyed = True
         return bullet_remove_list, enemy_remove_list
 
     def __check_enemies(self):

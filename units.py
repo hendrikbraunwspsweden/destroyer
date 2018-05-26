@@ -225,7 +225,7 @@ class Destroyer(object):
         new_time = datetime.datetime.now()
         delta = (new_time - self.__last_shooting_power_check).total_seconds()
         if self.__shooting_power > 20:
-            self.__shooting_power += 50 * delta
+            self.__shooting_power += 55 * delta
         else:
             self.__shooting_power += 20 * delta
         if self.__shooting_power > 100:
@@ -270,6 +270,7 @@ class Destroyer(object):
 class Enemy(object):
 
     _param_dict = {
+        "max_instances":None,
         "hp":None,
         "min_speed":None,
         "max_speed": None,
@@ -281,7 +282,7 @@ class Enemy(object):
         "torpedo_chance":None,
         "has_gun":None,
         "gun_type": None,
-        "gun_interval":None,
+        "gun_pattern":None,
         "points":None,
         "damage":None,
         "spawn_method":None,
@@ -317,6 +318,13 @@ class Enemy(object):
         "torpedo_type(int)                : torpedo type
         "torpedo_speed(int)               :torpedo speed in px/sec
         "torpedo_chance(float)            : chance of shooting torpedo, between 0.0 and 1.0
+        "has_gun"(bool)                   : defines if the ship has a gun
+        "gun_type" (int)                  : what type of gun, i.e. what bullet will be shot. Bullets are handled in the
+                                            Enemies class
+        "gun_pattern"(list of float)      : enemy shooting pattern. Waiting time in seconds. [2.0,0.2,0.2] means three
+                                            shots will be fired. The first after 2 seconds, the second after a 0.2
+                                            seconds pause and the third after a 0.2 seconds pause. Then the pattern is
+                                            restarted. Enables shooing of salvos.
         "points (int)                     : points awarded to player when enemy is shot
         "spawn_type" (int)                : sets wether the start point of the ship is randomized (value 0) or defined
                                             by the origin parameter
@@ -340,6 +348,7 @@ class Enemy(object):
         self._has_torpedo = None
         self._torpedo_shot = False
         self._gun_time_delta = 0
+        self._gun_pattern_pos = 0
 
     def get_rect(self):
         rect = pygame.Rect(self._position[0], self._position[1], self._position[0] + self._rect[2], self._position[1] + \
@@ -431,8 +440,13 @@ class Enemy(object):
     def shoot(self, time_delta):
         self._gun_time_delta += time_delta
         if self._param_dict["has_gun"]:
-            if self._gun_time_delta >= self._param_dict["gun_interval"]:
+            gun_pattern = self._param_dict["gun_pattern"]
+            if self._gun_time_delta >= gun_pattern[self._gun_pattern_pos]:
                 self._gun_time_delta = 0
+                if self._gun_pattern_pos == len(gun_pattern)-1:
+                    self._gun_pattern_pos = 0
+                else:
+                    self._gun_pattern_pos += 1
                 return True
         return False
 
@@ -471,6 +485,7 @@ class Enemy(object):
 class Submarine(Enemy):
 
     param_dict = {
+        "max_instances":None,
         "hp":200,
         "min_speed":60,
         "max_speed":80,
@@ -479,10 +494,10 @@ class Submarine(Enemy):
         "has_torpedo":True,
         "torpedo_type":1,
         "torpedo_speed":30,
-        "torpedo_chance":0.6,
+        "torpedo_chance":0.3,
         "has_gun":None,
         "gun_type": None,
-        "gun_interval":None,
+        "gun_pattern":None,
         "points":100,
         "damage":None,
         "spawn_method":0,
@@ -511,21 +526,22 @@ class Submarine(Enemy):
         return cls.param_dict
 
 
-class Torpedoboat(Enemy):
+class Gunboat(Enemy):
 
     param_dict = {
+        "max_instances":1,
         "hp":100,
         "min_speed":120,
         "max_speed":150,
         "game_speed_multiplier":0.1,
         "min_dist":100,
-        "has_torpedo":True,
-        "torpedo_type":0,
-        "torpedo_speed":0,
-        "torpedo_chance":0.4,
-        "has_gun":None,
-        "gun_type": None,
-        "gun_interval":None,
+        "has_torpedo":False,
+        "torpedo_type":None,
+        "torpedo_speed":None,
+        "torpedo_chance":None,
+        "has_gun":True,
+        "gun_type": 0,
+        "gun_pattern":[3,0.05,0.05],
         "points":100,
         "damage":None,
         "spawn_method":0,
@@ -553,21 +569,22 @@ class Torpedoboat(Enemy):
         return cls.param_dict
 
 
-class Torpedoboat2(Enemy):
+class Torpedoboat(Enemy):
 
     param_dict = {
+        "max_instances":None,
         "hp":100,
         "min_speed":140,
         "max_speed":160,
         "game_speed_multiplier":0.1,
         "min_dist":100,
         "has_torpedo":True,
-        "torpedo_type":2,
+        "torpedo_type":1,
         "torpedo_speed":0,
         "torpedo_chance":0.4,
-        "has_gun":True,
-        "gun_type": 0,
-        "gun_interval":2,
+        "has_gun":None,
+        "gun_type": None,
+        "gun_pattern":None,
         "points":100,
         "damage":None,
         "spawn_method":0,
@@ -594,6 +611,7 @@ class Torpedoboat2(Enemy):
     def get_params(cls):
         return cls.param_dict
 
+
 class Torpedo_0(Enemy):
 
     param_dict = {
@@ -608,7 +626,7 @@ class Torpedo_0(Enemy):
         "torpedo_chance":0,
         "has_gun":None,
         "gun_type": None,
-        "gun_interval":None,
+        "gun_pattern":None,
         "points":300,
         "damage":50,
         "spawn_method":0,
@@ -653,7 +671,7 @@ class Torpedo_2(Enemy):
         "torpedo_chance":0,
         "has_gun":None,
         "gun_type": None,
-        "gun_interval":None,
+        "gun_pattern":None,
         "points":300,
         "damage":100,
         "spawn_method":None,
@@ -698,7 +716,7 @@ class Torpedo_1(Enemy):
         "torpedo_chance":0,
         "has_gun":None,
         "gun_type": None,
-        "gun_interval":None,
+        "gun_pattern":None,
         "points":300,
         "damage":100,
         "spawn_method":None,
@@ -743,7 +761,7 @@ class Rowing_boat(Enemy):
         "torpedo_chance":0,
         "has_gun":None,
         "gun_type": None,
-        "gun_interval":None,
+        "gun_pattern":None,
         "points":300,
         "damage":50,
         "spawn_method":1,
@@ -775,7 +793,8 @@ class Rowing_boat(Enemy):
 class Bullet(object):
     _param_dict = {
         "speed":None,
-        "damage":None
+        "damage":None,
+        "is_friendly":None
     }
 
     def __init__(self, timer, origin, direction):
@@ -839,13 +858,15 @@ class Bullet(object):
 class Destroyer_bullet_1(Bullet):
     _param_dict = {
         "speed":800,
-        "damage":100
+        "damage":100,
+        "is_friendly":True
     }
 
     def __init__(self, timer, origin, direction):
         Bullet.__init__(self, timer, origin, direction)
         self._image = pygame.image.load("./media/bullet1.png")
-        self._is_friendly = True
+
+        self._is_friendly = self._param_dict["is_friendly"]
         self._damage = self._param_dict["damage"]
         self._speed = self._param_dict["speed"]
 
@@ -859,7 +880,8 @@ class Destroyer_bullet_1(Bullet):
 class Standard_enemy_bullet(Bullet):
     _param_dict = {
         "speed":800,
-        "damage":50
+        "damage":5,
+        "is_friendly":False
     }
 
     def __init__(self, timer,origin, direction):
@@ -867,7 +889,7 @@ class Standard_enemy_bullet(Bullet):
         self._image = pygame.image.load("./media/canonball.png")
         self._damage = self._param_dict["damage"]
         self._speed = self._param_dict["speed"]
-        self._is_friendly = False
+        self._is_friendly = self._param_dict["is_friendly"]
 
         self._image = pygame.transform.rotate(self._image, - self._direction)
         rect = self._image.get_rect()
