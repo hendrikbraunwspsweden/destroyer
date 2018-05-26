@@ -19,6 +19,7 @@ import pygame
 import datetime
 from math import floor
 from random import randrange
+import sprite
 
 
 def project_point(original_x, original_y, bearing, distance):
@@ -262,6 +263,12 @@ class Destroyer(object):
     def get_max_hp(self):
         return self.__max_hp
 
+    def reset_hp(self):
+        self.__hp = self.__max_hp
+
+    def increase_max_hp(self, hp):
+        self.__max_hp += hp
+
 
 class Enemy(object):
 
@@ -346,10 +353,12 @@ class Enemy(object):
         self._gun_time_delta = 0
         self._gun_pattern_pos = 0
 
-    def get_rect(self):
-        rect = pygame.Rect(self._position[0], self._position[1], self._position[0] + self._rect[2], self._position[1] + \
+    def get_extent(self):
+        return pygame.Rect(self._position[0], self._position[1], self._position[0] + self._rect[2], self._position[1] + \
                self._rect[3])
-        return rect
+
+    def get_rect(self):
+        return self._rect
 
     def get_direction(self):
         return self._direction
@@ -895,7 +904,7 @@ class Standard_enemy_bullet(Bullet):
                                  self._image_size[0], self._image_size[1])
 
 class Crate(object):
-    def __init__(self, origin, return_points, crate_type, effect_points=100):
+    def __init__(self, origin, return_points, effect_points=100):
 
         """
         Crate class. The instance is initialted from the Crates class game instance. The parameters are randomized
@@ -917,14 +926,11 @@ class Crate(object):
 
         self._origin = origin
         self._return_points = return_points
-        self._image = pygame.image.load("./media/crate.png")
-        self._rect = pygame.Rect(origin[0], origin[1], self._image.get_rect()[2], self._image.get_rect()[3])
-        self._type = crate_type
         self._create_time = datetime.datetime.now()
         self._effect_points = effect_points
 
     def get_image(self):
-        return self._image, self._rect
+        return self._sprite.get_image(), self._sprite.get_rect()
 
     def get_type(self):
         return self._type
@@ -941,7 +947,7 @@ class Crate(object):
         return (datetime.datetime.now() -  self._create_time).total_seconds()
 
     def get_rect(self):
-        return self._rect
+        return self._sprite.get_rect()
 
     def get_points(self):
         return self._return_points
@@ -954,4 +960,28 @@ class Crate(object):
         image = pygame.image.load("./media/crate.png")
         rect = image.get_rect()
         return rect[2], rect[3]
+
+class Repair_crate(Crate):
+    def __init__(self, origin, return_points, effect_points=100):
+        Crate.__init__(self,origin, return_points, effect_points)
+        self._sprite = sprite.Sprite("./media/crate_repair.png", origin[0], origin[1])
+        self._type = 0
+
+class Armor_crate(Crate):
+    def __init__(self, origin, return_points, effect_points=100):
+        Crate.__init__(self,origin, return_points, effect_points)
+        self._sprite = sprite.Sprite("./media/crate_reinforcement.png", origin[0], origin[1])
+        self._type = 1
+
+class Life_crate(Crate):
+    def __init__(self, origin, return_points, effect_points=100):
+        Crate.__init__(self,origin, return_points, effect_points)
+        self._sprite = sprite.Sprite("./media/crate_heart.png", origin[0], origin[1])
+        self._type = 2
+
+class Bomb_crate(Crate):
+    def __init__(self, origin, return_points, effect_points=100):
+        Crate.__init__(self,origin, return_points, effect_points)
+        self._sprite = sprite.Sprite("./media/crate_bomb.png", origin[0], origin[1])
+        self._type = 3
 

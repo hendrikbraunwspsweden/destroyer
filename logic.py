@@ -16,6 +16,7 @@
 
 
 from gfx import *
+from units import *
 import pygame
 
 class Points(object):
@@ -39,7 +40,7 @@ class Points(object):
 
 class Destroyer_logic(object):
 
-    def __init__(self, destroyer, enemies, bullets, torpedos, explosions, fades, texts, points, crates, window_size):
+    def __init__(self, timer, destroyer, enemies, bullets, torpedos, explosions, fades, texts, points, crates, window_size):
 
         """
         This is where all the game logic magic happens. Takes the instances of the different game objects and checks
@@ -79,6 +80,7 @@ class Destroyer_logic(object):
         self.__points = points
         self.__texts = texts
         self.__crates = crates
+        self.__timer = timer
 
     def __check_bullets(self):
 
@@ -141,7 +143,7 @@ class Destroyer_logic(object):
         enemies_remove_list = []
         enemies = self.__enemies.get_enemies()
         for i in range(len(self.__enemies.get_enemies())):
-            rect = enemies[i].get_rect()
+            rect = enemies[i].get_extent()
 
             if enemies[i].get_direction() == 0:
                 if rect[1] <= 0:
@@ -247,10 +249,30 @@ class Destroyer_logic(object):
                         crate_remove_list.append(c)
                         self.__points.add_points(crate_list[c].get_points())
                         self.__explosions.add_explosion(Explosion(bullet_list[b].get_position(), 20))
+
                         if crate_list[c].get_type() == 0:
                             self.__destroyer.increase_hp(crate_list[c].get_effect_points())
                             self.__texts.add_text(bullet_list[b].get_position(), "+{}hp".
                                                   format(crate_list[c].get_effect_points()))
+
+                        if crate_list[c].get_type() == 1:
+                            self.__destroyer.increase_max_hp(crate_list[c].get_effect_points())
+                            self.__texts.add_text(bullet_list[b].get_position(), "+{} max hp".
+                                              format(crate_list[c].get_effect_points()))
+
+                        if crate_list[c].get_type() == 2:
+                            self.__destroyer.reset_hp()
+                            self.__texts.add_text(bullet_list[b].get_position(), "HP refilled!".
+                                                  format(crate_list[c].get_effect_points()))
+
+                        if crate_list[c].get_type() == 3:
+                            for e in self.__enemies.get_enemies():
+                                self.__bullets.add_bullet(Destroyer_bullet_1(self.__timer,
+                                                                             e.get_center_point(), 0))
+                            self.__texts.add_text(bullet_list[b].get_position(), "C'EST LA BOMBE!".
+                                                  format(crate_list[c].get_effect_points()))
+
+
         return bullet_remove_list, crate_remove_list
 
     def __check_enemies_crates(self):
@@ -267,6 +289,9 @@ class Destroyer_logic(object):
         for e in range(len(self.__enemies.get_enemies())):
             for c in range(len(crate_list)):
                 if enemies_list[e].get_rect().colliderect(crate_list[c].get_rect()):
+                    print(enemies_list[e].get_rect())
+                    print(crate_list[c].get_rect())
+                    print("Crate removed due to collision with enemy")
                     crates_remove_list.append(c)
         return crates_remove_list
 

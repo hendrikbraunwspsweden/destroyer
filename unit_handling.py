@@ -101,7 +101,7 @@ class Enemies():
             """
 
             for e in self.__enemy_list:
-                rect = e.get_rect()
+                rect = e.get_extent()
                 if rect[1] - 40 < y < rect[3] + 40:
                     return True
             return False
@@ -352,17 +352,19 @@ class Bullets(object):
 
 class Crates(object):
 
+    __crate_ratios = [(1,60), (60,80), (80,95), (95,100)]
+
     __wait_range_per_level = {
-        0:(10,40),
-        1:(10,40),
-        2:(30,40),
-        3:(30,40),
-        4:(30,40),
-        5:(30,40),
-        6:(30,40),
-        7:(30,40),
-        8:(30,40),
-        9:(30,40),
+        0:(10,30),
+        1:(10,30),
+        2:(10,30),
+        3:(10,30),
+        4:(20,30),
+        5:(20,30),
+        6:(20,30),
+        7:(20,30),
+        8:(20,30),
+        9:(20,30),
     }
 
     def __init__(self, timer, window_size, y_margin, destroyer, game_level, timeout=8, max_crates=2):
@@ -398,7 +400,6 @@ class Crates(object):
         self._total_time = 0
         self._pause = randrange(self._wait_range[0], self._wait_range[1], 1)
         self._timeout = timeout
-        self._crate_type = None
 
     def make_crate(self, timer):
 
@@ -413,7 +414,18 @@ class Crates(object):
 
         self._total_time += self._timer.get_delta()
         if self._total_time > self._pause:
-            self._crate_type = randrange(0,1,1)
+            rand = randrange(1,100,1)
+            print rand
+
+            for i in range(len(self.__crate_ratios)):
+                print("{} {} < {} < {}".format(i, self.__crate_ratios[i][0], rand, self.__crate_ratios[i][1]))
+                if self.__crate_ratios[i][0] <= rand < self.__crate_ratios[i][1]:
+                    print("True")
+                    crate_type = i
+                    break
+                else:
+                    print("False")
+
             good_pos = False
             enemies = self._enemies.get_enemies()
             destroyer = self._destroyer.get_image()
@@ -435,7 +447,15 @@ class Crates(object):
                 if good_pos_int == 0:
                     good_pos = True
 
-            self._crates_list.append(Crate((x,y),100, 0, 100))
+            if crate_type == 0:
+                self._crates_list.append(Repair_crate((x,y),100, 100))
+            if crate_type == 1:
+                self._crates_list.append(Armor_crate((x,y),100, 100))
+            if crate_type == 2:
+                self._crates_list.append(Life_crate((x,y),100, 100))
+            if crate_type == 3:
+                self._crates_list.append(Bomb_crate((x,y),100, 100))
+
             self._wait_range = self.__wait_range_per_level[self._game_level.get_level()]
             self._pause = randrange(self._wait_range[0], self._wait_range[1], 1)
             self._total_time = 0
@@ -455,6 +475,7 @@ class Crates(object):
         remove_list = []
         for c in range(len(self._crates_list)):
             if self._crates_list[c].get_age() > self._timeout:
+                print("Timed out after {} seconds".format(self._crates_list[c].get_age()))
                 remove_list.append(c)
         self.remove_crates(remove_list)
 

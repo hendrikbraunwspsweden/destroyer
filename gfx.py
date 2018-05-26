@@ -295,8 +295,11 @@ class Destroyer_gfx(object):
         self.__screen.blit(points, (0,0))
 
         hp_ratio = self.__destroyer.get_hp() / float(self.__destroyer.get_max_hp())
-        hp = myfont.render('Life: {}'.format(self.__destroyer.get_hp()), True, (255, 255*hp_ratio,255*hp_ratio))
+        hp = myfont.render('HP: {}'.format(self.__destroyer.get_hp()), True, (255, 255*hp_ratio,255*hp_ratio))
         self.__screen.blit(hp, (100,0))
+
+        max_hp = myfont.render("Max HP:{}".format(self.__destroyer.get_max_hp()), True, (255,255,255))
+        self.__screen.blit(max_hp, (200,0))
 
         level = myfont.render("Level: {}".format(self.__game_level.get_level() +1), True, (255,255,255))
         size_x = level.get_rect()[2]

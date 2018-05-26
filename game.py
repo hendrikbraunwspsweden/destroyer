@@ -140,7 +140,7 @@ class Destroyer_game(object):
         points = Points()
         texts = Texts(timer)
         explosions = Explosions(timer)
-        destroyer = Destroyer(0,500, 500, self.__window_size)
+        destroyer = Destroyer(0,500, 5000, self.__window_size)
         bullets = Bullets(timer, (self.__window_size[0]/2, self.__window_size[1]/2), self.__window_size)
         torpedos = Torpedos(timer)
         crates = Crates(timer, self.__window_size, self.__font_size + 20, destroyer, game_level)
@@ -152,7 +152,7 @@ class Destroyer_game(object):
         enemies.add_enemy()
 
         #Initializing game logic
-        logic = Destroyer_logic(destroyer, enemies, bullets, torpedos, explosions, fades, texts, points, crates,
+        logic = Destroyer_logic(timer, destroyer, enemies, bullets, torpedos, explosions, fades, texts, points, crates,
                                 self.__window_size)
 
         #Initializing game graphics
