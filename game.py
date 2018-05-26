@@ -117,6 +117,7 @@ class Destroyer_game(object):
         :returns:
         """
         self.__window_size = window_size
+        self.__center = (self.__window_size[0]/2, self.__window_size[1]/2)
         self.__enemies = []
         self.__bullets = []
         self.__enemy_strenght = None
@@ -140,7 +141,7 @@ class Destroyer_game(object):
         bullets = Bullets(timer, (self.__window_size[0]/2, self.__window_size[1]/2), self.__window_size)
         torpedos = Torpedos(timer)
         crates = Crates(timer, self.__window_size, self.__font_size + 20, destroyer, game_level)
-        enemies = Enemies(timer, self.__wait_time_range, self.__max_enemies_ff, torpedos, crates, game_level,
+        enemies = Enemies(timer, self.__wait_time_range, self.__max_enemies_ff, torpedos, crates, bullets, game_level,
                           self.__window_size, font_size)
         crates.set_enemies(enemies)
         fades = Fades(timer)
@@ -203,7 +204,7 @@ class Destroyer_game(object):
 
             if keys[pygame.K_SPACE]:
                 if destroyer.shoot():
-                    bullets.add_bullet(timer, 0,100, destroyer.get_direction(), 800)
+                    bullets.add_bullet(Destroyer_bullet_1(timer, self.__center, destroyer.get_direction()))
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT: sys.exit()

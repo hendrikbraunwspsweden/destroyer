@@ -22,10 +22,14 @@ class Enemies():
     to have a 70% chance of appearing and it is first in the list, then the range should be defined as (1,70)
     and if ship type 2 then is supposed to have a 30% chance of appearing, the range has to be specified as
     (70,100). The ship type class that will be initiated based on the randomized number is defined in add_enemy
+
+    Ship type 0: Submarine
+    Ship type 1: Gun ship
+    Ship type 2: Torpedo boat
     """
 
     __ship_ratios_per_level = {
-        0:[(0,1), (1,60), (60,100)],
+        0:[(1,30), (30,50), (50,100)],
         1:[(1,30), (30,60), (60,100)],
         2:[(1,30), (30,60), (60,100)],
         3:[(1,30), (30,60), (60,100)],
@@ -37,8 +41,8 @@ class Enemies():
         9:[(1,30), (30,60), (60,100)]
     }
 
-    def __init__(self, timer, wait_time_range, max_enemies, torpedos, crates, game_level, window_size, top_distance,
-                 max_torpedos=2):
+    def __init__(self, timer, wait_time_range, max_enemies, torpedos, crates, bullets,  game_level, window_size,
+                 top_distance, max_torpedos=2):
         """
         Class for handling all enemy ship objects.
         :param wait_time_range  : range of minimum wait time to maximum wait time for spawn of next enemy
@@ -71,12 +75,14 @@ class Enemies():
         self.__game_level = game_level
         self.__ship_ratios = self.__ship_ratios_per_level[self.__game_level.get_level()]
         self.__torpedos = torpedos
+        self.__bullets = bullets
         self.__crates = crates
         self.__top_distance = top_distance
         self.__max_torpedos = max_torpedos
         self.__total_enemies = 0
         self.__sunk_enemies_count = 0
         self.__total_time = 0
+        self.__unit_type_count = {i:0 for i in range(len(self.__ship_ratios[0]))}
 
     def add_enemy(self):
         """
@@ -104,9 +110,9 @@ class Enemies():
             if ship_type == 0:
                 ship = Submarine(speed, origin, direction)
             elif ship_type == 1 :
-                ship = Torpedoboat(speed, origin, direction)
+                ship = Gunboat(speed, origin, direction)
             elif ship_type == 2 :
-                ship = Torpedoboat2(speed,origin,direction)
+                ship = Torpedoboat(speed, origin, direction)
             return ship
 
         def make_ship():
@@ -127,9 +133,9 @@ class Enemies():
             if ship_type == 0:
                 param_dict = Submarine.get_params()
             elif ship_type == 1:
-                param_dict = Torpedoboat.get_params()
+                param_dict = Gunboat.get_params()
             elif ship_type == 2:
-                param_dict = Torpedoboat2.get_params()
+                param_dict = Torpedoboat.get_params()
 
             speed = randrange(param_dict["min_speed"], param_dict["max_speed"], 1)
 
@@ -209,6 +215,7 @@ class Enemies():
                                 direction = 0
 
                             torpedo_type = e.get_params()["torpedo_type"]
+
                             if torpedo_type == 0:
                                 self.__torpedos.add_torpedo(Torpedo_0(Torpedo_0.get_params()["min_speed"],
                                                                       center_point,direction))
@@ -218,6 +225,7 @@ class Enemies():
                             if torpedo_type == 2:
                                 self.__torpedos.add_torpedo(Torpedo_2(Torpedo_2.get_params()["min_speed"],
                                                                       center_point, direction))
+
                             e.set_torpedo_shot()
 
                 if e.get_direction() == 3:
@@ -239,6 +247,11 @@ class Enemies():
                                 self.__torpedos.add_torpedo(Torpedo_1(Torpedo_1.get_params()["min_speed"],
                                                                       center_point,direction))
                             e.set_torpedo_shot()
+
+            if e.shoot(self.__timer.get_delta()):
+                if e.get_gun_type() == 0:
+                    bearing = get_bearing(e.get_center_point(), (self.__window_size[0]/2, self.__window_size[1]/2))[0]
+                    self.__bullets.add_bullet(Standard_enemy_bullet(self.__timer, e.get_center_point(), bearing))
 
 
     def get_enemies(self):
@@ -313,8 +326,8 @@ class Bullets(object):
         self.__window_size = window_size
         self.__bullet_list = []
 
-    def add_bullet(self, timer, type, power, direction, speed):
-        self.__bullet_list.append(Bullet(timer, type, power, self.__origin, direction, speed))
+    def add_bullet(self, bullet):
+        self.__bullet_list.append(bullet)
 
     def move(self):
         pop_list = []

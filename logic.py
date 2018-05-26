@@ -111,16 +111,25 @@ class Destroyer_logic(object):
         bullet_list = self.__bullets.get_bullets()
 
         for b in range(len(bullet_list)):
-            for e in range(len(enemy_list)):
-                if bullet_list[b].get_image()[1].colliderect(enemy_list[e].get_image()[1]):
+            if bullet_list[b].is_friendly():
+                for e in range(len(enemy_list)):
+                    if bullet_list[b].get_image()[1].colliderect(enemy_list[e].get_image()[1]):
+                        bullet_remove_list.append(b)
+                        self.__explosions.add_explosion(Explosion(bullet_list[b].get_position(), 20))
+                        if enemy_list[e].reduce_hp(bullet_list[b].get_damage()):
+                            enemy_remove_list.append(e)
+                            self.__points.add_points(enemy_list[e].get_params()["points"])
+                            self.__fades.add_fade(enemy_list[e].get_image()[0], enemy_list[e].get_image()[1], 0.5)
+                            self.__texts.add_text(bullet_list[b].get_position(), "+{}".
+                                                  format(enemy_list[e].get_params()["points"]))
+            else:
+                if bullet_list[b].get_image()[1].colliderect(self.__destroyer.get_image()[1]):
                     bullet_remove_list.append(b)
                     self.__explosions.add_explosion(Explosion(bullet_list[b].get_position(), 20))
-                    if enemy_list[e].reduce_hp(bullet_list[b].get_power()):
-                        enemy_remove_list.append(e)
-                        self.__points.add_points(enemy_list[e].get_params()["points"])
-                        self.__fades.add_fade(enemy_list[e].get_image()[0], enemy_list[e].get_image()[1], 0.5)
-                        self.__texts.add_text(bullet_list[b].get_position(), "+{}".
-                                              format(enemy_list[e].get_params()["points"]))
+                    self.__texts.add_text(bullet_list[b].get_position(), "-{}".
+                                          format(bullet_list[b].get_damage(), positive=False))
+                    if self.__destroyer.reduce_hp(bullet_list[b].get_damage()):
+                        destroyer_destroyed = True
         return bullet_remove_list, enemy_remove_list
 
     def __check_enemies(self):
@@ -207,15 +216,16 @@ class Destroyer_logic(object):
         bullet_list = self.__bullets.get_bullets()
 
         for b in range(len(bullet_list)):
-            for e in range(len(torpedo_list)):
-                if bullet_list[b].get_image()[1].colliderect(torpedo_list[e].get_image()[1]):
-                    bullet_remove_list.append(b)
-                    torpedo_remove_list.append(e)
-                    self.__points.add_points(torpedo_list[e].get_params()["points"])
-                    self.__explosions.add_explosion(Explosion(bullet_list[b].get_position(), 20))
-                    self.__fades.add_fade(torpedo_list[e].get_image()[0], torpedo_list[e].get_image()[1], 0.5)
-                    self.__texts.add_text(bullet_list[b].get_position(), "+{}".
-                                          format(torpedo_list[e].get_params()["points"]))
+            if bullet_list[b].is_friendly():
+                for e in range(len(torpedo_list)):
+                    if bullet_list[b].get_image()[1].colliderect(torpedo_list[e].get_image()[1]):
+                        bullet_remove_list.append(b)
+                        torpedo_remove_list.append(e)
+                        self.__points.add_points(torpedo_list[e].get_params()["points"])
+                        self.__explosions.add_explosion(Explosion(bullet_list[b].get_position(), 20))
+                        self.__fades.add_fade(torpedo_list[e].get_image()[0], torpedo_list[e].get_image()[1], 0.5)
+                        self.__texts.add_text(bullet_list[b].get_position(), "+{}".
+                                              format(torpedo_list[e].get_params()["points"]))
         return bullet_remove_list, torpedo_remove_list
 
     def __check_bullets_crates(self):
@@ -233,16 +243,17 @@ class Destroyer_logic(object):
         crate_list = self.__crates.get_crates()
 
         for b in range(len(bullet_list)):
-            for c in range(len(crate_list)):
-                if bullet_list[b].get_image()[1].colliderect(crate_list[c].get_rect()):
-                    bullet_remove_list.append(b)
-                    crate_remove_list.append(c)
-                    self.__points.add_points(crate_list[c].get_points())
-                    self.__explosions.add_explosion(Explosion(bullet_list[b].get_position(), 20))
-                    if crate_list[c].get_type() == 0:
-                        self.__destroyer.increase_hp(crate_list[c].get_effect_points())
-                        self.__texts.add_text(bullet_list[b].get_position(), "+{}hp".
-                                              format(crate_list[c].get_effect_points()))
+            if bullet_list[b].is_friendly():
+                for c in range(len(crate_list)):
+                    if bullet_list[b].get_image()[1].colliderect(crate_list[c].get_rect()):
+                        bullet_remove_list.append(b)
+                        crate_remove_list.append(c)
+                        self.__points.add_points(crate_list[c].get_points())
+                        self.__explosions.add_explosion(Explosion(bullet_list[b].get_position(), 20))
+                        if crate_list[c].get_type() == 0:
+                            self.__destroyer.increase_hp(crate_list[c].get_effect_points())
+                            self.__texts.add_text(bullet_list[b].get_position(), "+{}hp".
+                                                  format(crate_list[c].get_effect_points()))
         return bullet_remove_list, crate_remove_list
 
     def __check_enemies_crates(self):
