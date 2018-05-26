@@ -171,7 +171,7 @@ class Destroyer_game(object):
         while not exit_game:
 
             #Level handling
-            if enemies.get_sunk_count() == self.__next_level_in:
+            if enemies.get_sunk_count() >= self.__next_level_in:
                 if game_level.get_level() < self.__max_level:
                     game_level.increase()
                     enemies.reset_sunk_count()

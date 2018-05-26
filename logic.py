@@ -272,6 +272,16 @@ class Destroyer_logic(object):
                             self.__texts.add_text(bullet_list[b].get_position(), "C'EST LA BOMBE!".
                                                   format(crate_list[c].get_effect_points()))
 
+                        if crate_list[c].get_type() == 4:
+                            x = crate_list[c].get_position()[0]
+                            y = crate_list[c].get_position()[1]
+                            self.__bullets.add_bullet(Mine(self.__timer,(x, y-30), 0))
+                            self.__bullets.add_bullet(Mine(self.__timer,(x+30, y), 0))
+                            self.__bullets.add_bullet(Mine(self.__timer,(x, y+30), 0))
+                            self.__bullets.add_bullet(Mine(self.__timer,(x-30, y), 0))
+                            self.__texts.add_text(bullet_list[b].get_position(), "Mines!".
+                                                  format(crate_list[c].get_effect_points()))
+
 
         return bullet_remove_list, crate_remove_list
 

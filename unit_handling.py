@@ -351,20 +351,21 @@ class Bullets(object):
 
 
 class Crates(object):
+    """Repair, Armor, Life, Bomb, Mine"""
 
-    __crate_ratios = [(1,60), (60,80), (80,95), (95,100)]
+    __crate_ratios = [(1,60), (60,70), (70,80), (80,85), (85,100)]
 
     __wait_range_per_level = {
-        0:(10,30),
-        1:(10,30),
-        2:(10,30),
-        3:(10,30),
-        4:(20,30),
-        5:(20,30),
-        6:(20,30),
-        7:(20,30),
-        8:(20,30),
-        9:(20,30),
+        0:(20,30),
+        1:(20,30),
+        2:(20,30),
+        3:(20,30),
+        4:(15,30),
+        5:(15,30),
+        6:(15,30),
+        7:(15,30),
+        8:(15,30),
+        9:(15,30),
     }
 
     def __init__(self, timer, window_size, y_margin, destroyer, game_level, timeout=8, max_crates=2):
@@ -455,6 +456,8 @@ class Crates(object):
                 self._crates_list.append(Life_crate((x,y),100, 100))
             if crate_type == 3:
                 self._crates_list.append(Bomb_crate((x,y),100, 100))
+            if crate_type == 4:
+                self._crates_list.append(Mine_crate((x,y),100, 100))
 
             self._wait_range = self.__wait_range_per_level[self._game_level.get_level()]
             self._pause = randrange(self._wait_range[0], self._wait_range[1], 1)

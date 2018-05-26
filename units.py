@@ -366,6 +366,9 @@ class Enemy(object):
     def get_position(self):
         return self._position
 
+    def set_direction(self, direction):
+        self._direction = direction
+
     def get_center_point(self):
         return self._position[0] + self._image_size[0]/2, self._position[1] + self._image_size[1]/2
 
@@ -546,7 +549,7 @@ class Gunboat(Enemy):
         "torpedo_chance":None,
         "has_gun":True,
         "gun_type": 0,
-        "gun_pattern":[3,0.05,0.05],
+        "gun_pattern":[3,0.05, 0.07],
         "points":100,
         "damage":None,
         "spawn_method":0,
@@ -586,7 +589,7 @@ class Torpedoboat(Enemy):
         "has_torpedo":True,
         "torpedo_type":1,
         "torpedo_speed":0,
-        "torpedo_chance":0.4,
+        "torpedo_chance":0.35,
         "has_gun":None,
         "gun_type": None,
         "gun_pattern":None,
@@ -723,7 +726,7 @@ class Torpedo_1(Enemy):
         "gun_type": None,
         "gun_pattern":None,
         "points":300,
-        "damage":100,
+        "damage":80,
         "spawn_method":None,
         "fixed_spawn":[(),None]
     }
@@ -838,7 +841,7 @@ class Bullet(object):
         """
 
         time_delta = self._timer.get_delta()
-        vector_delta = floor(time_delta * self._speed)
+        vector_delta = time_delta * self._speed
 
         self._position = project_point(self._position[0], self._position[1], self._direction, vector_delta)
 
@@ -903,6 +906,29 @@ class Standard_enemy_bullet(Bullet):
         self._rect = pygame.Rect(self._position[0] - self._image_size[0] / 2, self._position[1] - self._image_size[1] / 2,
                                  self._image_size[0], self._image_size[1])
 
+
+class Mine(Bullet):
+    _param_dict = {
+        "speed":1,
+        "damage":500,
+        "is_friendly":True
+    }
+
+    def __init__(self, timer,origin, direction):
+        Bullet.__init__(self, timer, origin, direction)
+        self._image = pygame.image.load("./media/mine.png")
+        self._damage = self._param_dict["damage"]
+        self._speed = self._param_dict["speed"]
+        self._is_friendly = self._param_dict["is_friendly"]
+        self._direction = randrange(0,359,1)
+
+        self._image = pygame.transform.rotate(self._image, - self._direction)
+        rect = self._image.get_rect()
+        self._image_size = rect[2], rect[3]
+
+        self._rect = pygame.Rect(self._position[0] - self._image_size[0] / 2, self._position[1] - self._image_size[1] / 2,
+                                 self._image_size[0], self._image_size[1])
+
 class Crate(object):
     def __init__(self, origin, return_points, effect_points=100):
 
@@ -934,6 +960,9 @@ class Crate(object):
 
     def get_type(self):
         return self._type
+
+    def get_position(self):
+        return self._sprite.get_rect()[0], self._sprite.get_rect()[1]
 
     def get_age(self):
 
@@ -984,4 +1013,10 @@ class Bomb_crate(Crate):
         Crate.__init__(self,origin, return_points, effect_points)
         self._sprite = sprite.Sprite("./media/crate_bomb.png", origin[0], origin[1])
         self._type = 3
+
+class Mine_crate(Crate):
+    def __init__(self, origin, return_points, effect_points=100):
+        Crate.__init__(self,origin, return_points, effect_points)
+        self._sprite = sprite.Sprite("./media/crate_mine.png", origin[0], origin[1])
+        self._type = 4
 
