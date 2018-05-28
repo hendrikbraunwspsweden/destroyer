@@ -351,9 +351,9 @@ class Bullets(object):
 
 
 class Crates(object):
-    """Repair, Armor, Life, Bomb, Mine"""
+    """Repair, Armor, Life, Bomb, Mine, Machine gun"""
 
-    __crate_ratios = [(1,50), (50,60), (60,70), (70,80), (80,100)]
+    __crate_ratios = [(1,30), (30,40), (40,50), (50,60), (60,80), (80,100)]
 
     __wait_range_per_level = {
         0:(25,30),
@@ -416,16 +416,11 @@ class Crates(object):
         self._total_time += self._timer.get_delta()
         if self._total_time > self._pause:
             rand = randrange(1,100,1)
-            print rand
 
             for i in range(len(self.__crate_ratios)):
-                print("{} {} < {} < {}".format(i, self.__crate_ratios[i][0], rand, self.__crate_ratios[i][1]))
                 if self.__crate_ratios[i][0] <= rand < self.__crate_ratios[i][1]:
-                    print("True")
                     crate_type = i
                     break
-                else:
-                    print("False")
 
             good_pos = False
             enemies = self._enemies.get_enemies()
@@ -434,8 +429,8 @@ class Crates(object):
 
             while not good_pos:
                 good_pos_int = 0
-                x = randrange(0,self._window_size[0], 1)
-                y = randrange(self._y_margin, self._window_size[1] - 30, 1)
+                x = randrange(50,self._window_size[0]-50, 1)
+                y = randrange(self._y_margin, self._window_size[1] - 50, 1)
 
                 for e in enemies:
                     #rect = pygame.Rect(0, e.get_rect()[1], self._window_size[0], e.get_rect()[3])
@@ -458,6 +453,8 @@ class Crates(object):
                 self._crates_list.append(Bomb_crate((x,y),100, 100))
             if crate_type == 4:
                 self._crates_list.append(Mine_crate((x,y),100, 100))
+            if crate_type == 5:
+                self._crates_list.append(MG_crate((x,y),100,100))
 
             self._wait_range = self.__wait_range_per_level[self._game_level.get_level()]
             self._pause = randrange(self._wait_range[0], self._wait_range[1], 1)

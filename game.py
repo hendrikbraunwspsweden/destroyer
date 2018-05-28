@@ -56,6 +56,7 @@ class Game_level(object):
     def get_level(self):
         return self.__game_level
 
+
 class Destroyer_game(object):
     """
     The following dictionaries give the game level dependend variable values for game level brakes, maximum enemies
@@ -102,7 +103,7 @@ class Destroyer_game(object):
         9:(1,2),
     }
 
-    def __init__(self, window_size=(1024, 800), init_game_level=0, font_size=16):
+    def __init__(self, window_size=(1280, 1024), init_game_level=0, font_size=16):
         """
         Main class for the game creating and managing all game object class instances.
 
@@ -140,7 +141,8 @@ class Destroyer_game(object):
         points = Points()
         texts = Texts(timer)
         explosions = Explosions(timer)
-        destroyer = Destroyer(0,500, 5000, self.__window_size)
+        destroyer_options = Destroyer_options(timer)
+        destroyer = Destroyer(0, 5000, destroyer_options, self.__window_size)
         bullets = Bullets(timer, (self.__window_size[0]/2, self.__window_size[1]/2), self.__window_size)
         torpedos = Torpedos(timer)
         crates = Crates(timer, self.__window_size, self.__font_size + 20, destroyer, game_level)
@@ -152,8 +154,8 @@ class Destroyer_game(object):
         enemies.add_enemy()
 
         #Initializing game logic
-        logic = Destroyer_logic(timer, destroyer, enemies, bullets, torpedos, explosions, fades, texts, points, crates,
-                                self.__window_size)
+        logic = Destroyer_logic(timer, destroyer, destroyer_options, enemies, bullets, torpedos, explosions, fades,
+                                texts, points, crates,  self.__window_size)
 
         #Initializing game graphics
         graphics = Destroyer_gfx(self.__screen, destroyer, enemies, bullets, torpedos, explosions, fades, texts, points,
@@ -193,6 +195,9 @@ class Destroyer_game(object):
             crates.make_crate(timer)
             crates.check()
             logic.check()
+            destroyer_check = destroyer_options.check()
+            if destroyer_check is not None:
+                texts.add_text((self.__window_size[0]/2, self.__window_size[1]/2), "{}...".format(destroyer_check), font_size=18)
 
             self.__total_enemies = enemies.get_total_enemies()
 
@@ -209,6 +214,7 @@ class Destroyer_game(object):
 
             if keys[pygame.K_SPACE]:
                 if destroyer.shoot():
+                    fades.add_fade(destroyer.get_flash()[0], destroyer.get_flash()[1], 0.15)
                     bullets.add_bullet(Destroyer_bullet_1(timer, self.__center, destroyer.get_direction()))
 
             for event in pygame.event.get():
@@ -222,6 +228,12 @@ class Destroyer_game(object):
                             exit_game = True
                         else:
                             timer.reset()
+
+                    if key == "b":
+                        destroyer_options.set_reload_time(100,10)
+                        destroyer_options.set_power_reduction(0,10)
+                        destroyer_options.set_power_refill(500,10)
+                        destroyer_options.set_text_timer(10)
 
 
             graphics.draw()

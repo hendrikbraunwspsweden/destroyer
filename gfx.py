@@ -377,8 +377,8 @@ class Destroyer_gfx(object):
         for e in self.__enemies.get_enemies():
             self.__screen.blit(e.get_image()[0], e.get_image()[1])
 
-        pygame.draw.line(self.__screen, (102,102,102), (self.__window_size[0]/2, self.__window_size[1]/2),
-                         (self.__destroyer.get_pipe()), 8)
+        #pygame.draw.line(self.__screen, (102,102,102), (self.__window_size[0]/2, self.__window_size[1]/2),
+        #                 (self.__destroyer.get_pipe()), 8)
 
         for e in self.__explosions.get_explosions():
             self.__screen.blit(e.get_image()[0], e.get_image()[1])

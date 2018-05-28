@@ -113,9 +113,122 @@ def get_bearing(point_1, point_2):
     elif delta_x < 0 and delta_y < 0:
         return 360 + degrees(asin(delta_x/distance)), distance
 
+class Destroyer_options(object):
+    def __init__(self, timer):
+        """This class handles the Destroyer class options related to the destroyer weapon, such as reload time, power
+        reduction etc. When setting one of the options, a timer can be passed with the set method. If no timer is
+        passed, the change of the option will be permanent. With a timer, the change will be reverted to the default
+        options specified below. The timer is run by calling the check() method from the main game loop.
+        """
+
+        self.__timer = timer
+
+
+        #Default timer values
+        self.__b_type_timer = -1
+        self.__r_time_timer = -1
+        self.__p_reduction_timer = -1
+        self.__p_refill_timer = -1
+        self.__t_turn_speed_timer = -1
+        self.__text_timer = -1
+        self.__last_second = -1
+
+        #Default option values
+        self.__b_type = 0
+        self.__r_time = 500
+        self.__p_reduction = 40
+        self.__p_refill = 55
+        self.__t_speed = 1
+
+        #Initializing the option values
+        self.__bullet_type = self.__b_type
+        self.__reload_time = self.__r_time
+        self.__power_reduction = self.__p_reduction
+        self.__power_refill = self.__p_refill
+        self.__turn_speed = self.__t_speed
+
+    def set_bullet_type(self, bullet_type, timer=-1):
+        self.__bullet_type = bullet_type
+        self.__b_type_timer = timer
+
+    def get_bullet_type(self):
+        return self.__bullet_type
+
+    def set_reload_time(self, time, timer=-1):
+        self.__reload_time = time
+        self.__r_time_timer = timer
+
+    def get_reload_time(self):
+        return self.__reload_time
+
+    def set_power_reduction(self, reduction, timer=-1):
+        self.__power_reduction = reduction
+        self.__p_reduction_timer = timer
+
+    def get_power_reduction(self):
+        return self.__power_reduction
+
+    def set_power_refill(self, refill, timer=-1):
+        self.__power_refill = refill
+        self.__p_refill_timer = timer
+
+    def get_power_refill(self):
+        return self.__power_refill
+
+    def reset_bullet_type(self):
+        self.__bullet_type = self.__b_type
+        self.__b_type_timer = -1
+
+    def reset_reload_time(self):
+        self.__reload_time = self.__r_time
+        self.__r_time_timer = -1
+
+    def reset_power_reduction(self):
+        self.__power_reduction = self.__p_reduction
+        self.__p_reduction_timer = -1
+
+    def reset_power_refill(self):
+        self.__power_refill = self.__p_refill
+        self.__p_refill_timer = -1
+
+    def set_text_timer(self, time):
+        self.__text_timer = time
+        self.__last_second = time
+
+    def check(self):
+
+        if self.__b_type_timer <= 0.0:
+            self.reset_bullet_type()
+        elif self.__b_type_timer > 0:
+            self.__b_type_timer -= self.__timer.get_delta()
+
+        if self.__r_time_timer <= 0.0:
+            self.reset_reload_time()
+        elif self.__r_time_timer > 0:
+            self.__r_time_timer -= self.__timer.get_delta()
+
+        if self.__p_reduction_timer <= 0.0:
+            self.reset_power_reduction()
+        elif self.__p_reduction_timer > 0:
+            self.__p_reduction_timer -= self.__timer.get_delta()
+
+        if self.__p_refill_timer <= 0.0:
+            self.reset_power_refill()
+        elif self.__p_refill_timer > 0:
+            self.__p_refill_timer -= self.__timer.get_delta()
+
+        if self.__text_timer <= 0:
+            self.__text_timer = -1
+        elif self.__text_timer > 0:
+            self.__text_timer -= self.__timer.get_delta()
+            if self.__text_timer < self.__last_second:
+                self.__last_second = floor(self.__text_timer)
+                return int(self.__last_second) + 1
+        return None
+
 class Destroyer(object):
 
-    def __init__(self, type, reload_time, hp, window_size):
+    def __init__(self, type, hp, options, window_size):
 
         """
         Class for the players ship.
@@ -140,6 +253,7 @@ class Destroyer(object):
         self.__window_size = window_size
         self.__shooting_power = 100
         self.__last_shooting_power_check = datetime.datetime.now()
+        self.__options = options
 
         if type == 0:
             self.__pipe_length = 30
@@ -152,16 +266,16 @@ class Destroyer(object):
                                       self.__window_size[1]/2 - self.__image_size[1]/2,
                                       self.__image_size[0], self.__image_size[1])
 
-            self.__tower_image = pygame.image.load("./media/tower1.png")
-            rect = self.__tower_image.get_rect()
-            self.__tower_size = rect[2], rect[3]
+            self.__tower_image_orig = pygame.image.load("./media/tower.png")
+            self.__center = (window_size[0]/2, window_size[1]/2)
+            self.__tower_image = pygame.transform.rotate(self.__tower_image_orig, self.__tower_direction)
+            self.__tower_rect = self.__tower_image.get_rect(center=self.__center)
 
-            self.__tower_rect = pygame.Rect(self.__window_size[0]/2 - self.__tower_size[0]/2,
-                                            self.__window_size[1]/2 - self.__tower_size[1]/2,
-                                            self.__tower_size[0], self.__tower_size[1])
-            self.__pipe = (self.__window_size[0]/2, self.__window_size[1]/2 - 10)
+            self.__muzzle_image = pygame.image.load("./media/muzzle_flash.png")
+            self.__muzzle_flash = pygame.transform.rotate(self.__muzzle_image, self.__tower_direction)
+            self.__muzzle_rect = self.__muzzle_flash.get_rect(center=self.__center)
 
-        self.__reload_time = reload_time
+        self.__reload_time = options.get_reload_time()
 
     def turn_tower(self, direction, steps):
         if direction == 1:
@@ -174,23 +288,20 @@ class Destroyer(object):
                 self.__tower_direction = self.__tower_direction + 360
             self.__tower_direction -= steps
 
-        self.__pipe = project_point(self.__window_size[0]/2, self.__window_size[1]/2,
-                                    self.__tower_direction, self.__pipe_length)
+        self.__tower_image = pygame.transform.rotate(self.__tower_image_orig, -self.__tower_direction)
+        self.__tower_rect = self.__tower_image.get_rect(center=self.__center)
 
-    def set_reload_time(self, time):
-        self.__reload_time = time
-
-    def get_reload_time(self):
-        return self.__reload_time
+        self.__muzzle_flash = pygame.transform.rotate(self.__muzzle_image, -self.__tower_direction)
+        self.__muzzle_rect = self.__muzzle_flash.get_rect(center=self.__center)
 
     def get_image(self):
         return self.__image, self.__rect
 
+    def get_flash(self):
+        return self.__muzzle_flash, self.__muzzle_rect
+
     def get_tower(self):
         return self.__tower_image, self.__tower_rect
-
-    def get_pipe(self):
-        return self.__pipe
 
     def shoot(self, held_in=True):
         if self.__shooting_power < 20:
@@ -201,10 +312,10 @@ class Destroyer(object):
                 return True
             else:
                 delta = datetime.datetime.now() - self.__last_shot
-                if delta.total_seconds()*1000 > self.__reload_time:
+                if delta.total_seconds()*1000 > self.__options.get_reload_time():
                     self.__last_shot = datetime.datetime.now()
                     if self.__shooting_power < 80:
-                        self.__shooting_power -= 40
+                        self.__shooting_power -= self.__options.get_power_reduction()
                     else:
                         self.__shooting_power -= 30
                     if self.__shooting_power < 0:
@@ -222,7 +333,7 @@ class Destroyer(object):
         new_time = datetime.datetime.now()
         delta = (new_time - self.__last_shooting_power_check).total_seconds()
         if self.__shooting_power > 20:
-            self.__shooting_power += 55 * delta
+            self.__shooting_power += self.__options.get_power_refill() * delta
         else:
             self.__shooting_power += 20 * delta
         if self.__shooting_power > 100:
@@ -1020,3 +1131,8 @@ class Mine_crate(Crate):
         self._sprite = sprite.Sprite("./media/crate_mine.png", origin[0], origin[1])
         self._type = 4
 
+class MG_crate(Crate):
+    def __init__(self, origin, return_points, effect_points=100):
+        Crate.__init__(self,origin, return_points, effect_points)
+        self._sprite = sprite.Sprite("./media/crate_mg.png", origin[0], origin[1])
+        self._type = 5

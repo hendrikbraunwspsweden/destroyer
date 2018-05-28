@@ -40,7 +40,8 @@ class Points(object):
 
 class Destroyer_logic(object):
 
-    def __init__(self, timer, destroyer, enemies, bullets, torpedos, explosions, fades, texts, points, crates, window_size):
+    def __init__(self, timer, destroyer, destroyer_options, enemies, bullets, torpedos, explosions, fades, texts,
+                 points, crates, window_size):
 
         """
         This is where all the game logic magic happens. Takes the instances of the different game objects and checks
@@ -81,6 +82,7 @@ class Destroyer_logic(object):
         self.__texts = texts
         self.__crates = crates
         self.__timer = timer
+        self.__destroyer_options = destroyer_options
 
     def __check_bullets(self):
 
@@ -281,6 +283,14 @@ class Destroyer_logic(object):
                             self.__bullets.add_bullet(Mine(self.__timer,(x-30, y), 0))
                             self.__texts.add_text(bullet_list[b].get_position(), "Mines!".
                                                   format(crate_list[c].get_effect_points()))
+
+                        if crate_list[c].get_type() == 5:
+                            self.__destroyer_options.set_reload_time(100,10)
+                            self.__destroyer_options.set_power_reduction(0,10)
+                            self.__destroyer_options.set_power_refill(500,10)
+                            self.__texts.add_text(bullet_list[b].get_position(), "M..m...machine gun!!!".
+                                                  format(crate_list[c].get_effect_points()))
+                            self.__destroyer_options.set_text_timer(10)
 
 
         return bullet_remove_list, crate_remove_list
