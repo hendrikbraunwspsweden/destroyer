@@ -26,19 +26,20 @@ class Enemies():
     Ship type 0: Submarine
     Ship type 1: Gun ship
     Ship type 2: Torpedo boat
+    Ship type 3: Fregatte
     """
 
     __ship_ratios_per_level = {
-        0:[(1,30), (30,40), (40,100)],
-        1:[(1,30), (30,40), (40,100)],
-        2:[(1,30), (30,45), (45,100)],
-        3:[(1,30), (30,45), (45,100)],
-        4:[(1,30), (30,45), (45,100)],
-        5:[(1,30), (30,50), (50,100)],
-        6:[(1,30), (30,50), (50,100)],
-        7:[(1,30), (30,60), (60,100)],
-        8:[(1,30), (30,60), (60,100)],
-        9:[(1,30), (30,60), (60,100)]
+        0:[(1,30), (30,40), (40,41), (41,100)],
+        1:[(1,30), (30,40), (40,100), (100,101)],
+        2:[(1,30), (30,45), (45,100), (100,101)],
+        3:[(0,1), (1,45), (45,100), (100,101)],
+        4:[(1,30), (30,45), (45,100), (100,101)],
+        5:[(1,30), (30,50), (50,100), (100,101)],
+        6:[(1,30), (30,50), (50,100), (100,101)],
+        7:[(1,30), (30,60), (60,100), (100,101)],
+        8:[(1,30), (30,60), (60,100), (100,101)],
+        9:[(1,30), (30,60), (60,100), (100,101)]
     }
 
     def __init__(self, timer, wait_time_range, max_enemies, torpedos, crates, bullets,  game_level, window_size,
@@ -113,6 +114,8 @@ class Enemies():
                 ship = Gunboat(speed, origin, direction)
             elif ship_type == 2 :
                 ship = Torpedoboat(speed, origin, direction)
+            elif ship_type == 3:
+                ship = Fregatte(speed, origin, direction)
             return ship
 
         def make_ship():
@@ -136,6 +139,8 @@ class Enemies():
                 param_dict = Gunboat.get_params()
             elif ship_type == 2:
                 param_dict = Torpedoboat.get_params()
+            elif ship_type == 3:
+                param_dict = Fregatte.get_params()
 
             speed = randrange(param_dict["min_speed"], param_dict["max_speed"], 1)
 
@@ -253,6 +258,10 @@ class Enemies():
                     bearing = get_bearing(e.get_center_point(), (self.__window_size[0]/2, self.__window_size[1]/2))[0]
                     self.__bullets.add_bullet(Standard_enemy_bullet(self.__timer, e.get_center_point(), bearing))
 
+                elif e.get_gun_type() == 1:
+                    bearing = get_bearing(e.get_center_point(), (self.__window_size[0]/2, self.__window_size[1]/2))[0]
+                    self.__bullets.add_bullet(Fregatte_bullet(self.__timer, e.get_center_point(), bearing))
+
 
     def get_enemies(self):
         return self.__enemy_list
@@ -356,16 +365,16 @@ class Crates(object):
     __crate_ratios = [(1,30), (30,40), (40,50), (50,60), (60,80), (80,100)]
 
     __wait_range_per_level = {
-        0:(25,30),
-        1:(25,30),
-        2:(25,30),
-        3:(25,30),
-        4:(20,25),
-        5:(20,25),
-        6:(20,25),
-        7:(15,20),
-        8:(15,20),
-        9:(15,20),
+        0:(20,25),
+        1:(20,25),
+        2:(20,25),
+        3:(20,25),
+        4:(15,20),
+        5:(15,20),
+        6:(15,20),
+        7:(10,15),
+        8:(10,15),
+        9:(10,15),
     }
 
     def __init__(self, timer, window_size, y_margin, destroyer, game_level, timeout=8, max_crates=2):

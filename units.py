@@ -645,6 +645,50 @@ class Submarine(Enemy):
         return cls.param_dict
 
 
+class Fregatte(Enemy):
+
+    param_dict = {
+        "max_instances":None,
+        "hp":500,
+        "min_speed":60,
+        "max_speed":80,
+        "game_speed_multiplier":0,
+        "min_dist":200,
+        "has_torpedo":True,
+        "torpedo_type":1,
+        "torpedo_speed":30,
+        "torpedo_chance":1,
+        "has_gun":True,
+        "gun_type": 1,
+        "gun_pattern":[3,0.2,0.2,0.2],
+        "points":500,
+        "damage":None,
+        "spawn_method":0,
+        "fixed_spawn":[(),None]
+    }
+
+    def __init__(self, px_per_second, origin, direction):
+
+        Enemy.__init__(self, self.param_dict["hp"], px_per_second, origin, direction)
+
+        #Handing over parameter dict to parent
+        self._param_dict = self.param_dict
+
+        #Setting image related parameters
+        self._image = pygame.image.load("./media/fregatte.png")
+        if self._direction == 1:
+            self._image = pygame.transform.rotate(self._image, 180)
+
+        rect = self._image.get_rect()
+        self._image_size = rect[2], rect[3]
+        self._rect = pygame.Rect(self._position[0], self._position[1]-self._image_size[1]/2,
+                                 self._image_size[0], self._image_size[1])
+
+    @classmethod
+    def get_params(cls):
+        return cls.param_dict
+
+
 class Gunboat(Enemy):
 
     param_dict = {
@@ -995,6 +1039,29 @@ class Destroyer_bullet_1(Bullet):
 
         self._rect = pygame.Rect(self._position[0] - self._image_size[0] / 2, self._position[1] - self._image_size[1] / 2,
                                   self._image_size[0], self._image_size[1])
+
+
+class Fregatte_bullet(Bullet):
+    _param_dict = {
+        "speed":600,
+        "damage":10,
+        "is_friendly":False
+    }
+
+    def __init__(self, timer, origin, direction):
+        Bullet.__init__(self, timer, origin, direction)
+        self._image = pygame.image.load("./media/missile2.png")
+
+        self._is_friendly = self._param_dict["is_friendly"]
+        self._damage = self._param_dict["damage"]
+        self._speed = self._param_dict["speed"]
+
+        self._image = pygame.transform.rotate(self._image, - self._direction)
+        rect = self._image.get_rect()
+        self._image_size = rect[2], rect[3]
+
+        self._rect = pygame.Rect(self._position[0] - self._image_size[0] / 2, self._position[1] - self._image_size[1] / 2,
+                                 self._image_size[0], self._image_size[1])
 
 class Standard_enemy_bullet(Bullet):
     _param_dict = {
