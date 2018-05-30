@@ -13,9 +13,10 @@ class Sprite(object):
 
     def __init__(self, image, x=0,y=0):
         if isinstance(image, str):
-            self._image = pygame.image.load(image)
+            self._original_image = pygame.image.load(image)
         else:
-            self._image = image
+            self._original_image = image
+        self._image = self._original_image
         self._rect = pygame.Rect(x,y,self._image.get_rect()[2], self._image.get_rect()[3])
         self.__get_params()
 
@@ -58,6 +59,26 @@ class Sprite(object):
 
     def set_rect(self, rect):
         self._rect = rect
+
+    def rotate(self, degrees):
+        center = self._image.get_rect().center
+        self._image = pygame.transform.rotate(self._original_image, -degrees)
+        self._rect = self._image.get_rect(center=center)
+        self.__get_params()
+
+    def reset_rotation(self):
+        self._image = self._original_image
+        self._rect = pygame.Rect(self._x,self._y,self._image.get_rect()[2], self._image.get_rect()[3])
+        self.__get_params()
+
+    @property
+    def center(self):
+        return self._image.get_rect().center
+
+    @center.setter
+    def center(self, x,y):
+        self._rect = self._image.get_rect(center=(x,y))
+        self.__get_params()
 
     @classmethod
     def from_text(cls, text, x=0,y=0, font_name="Arial", font_size=20, color=(255,255,255)):

@@ -464,6 +464,8 @@ class Enemy(object):
         self._gun_time_delta = 0
         self._gun_pattern_pos = 0
 
+        self._trail = None
+
     def get_extent(self):
         return pygame.Rect(self._position[0], self._position[1], self._position[0] + self._rect[2], self._position[1] + \
                self._rect[3])
@@ -986,6 +988,8 @@ class Bullet(object):
         self._speed = None
         self._damage = None
 
+        self._trail = None
+
     def move(self):
 
         """
@@ -1039,6 +1043,9 @@ class Destroyer_bullet_1(Bullet):
 
         self._rect = pygame.Rect(self._position[0] - self._image_size[0] / 2, self._position[1] - self._image_size[1] / 2,
                                   self._image_size[0], self._image_size[1])
+
+        self._trail = sprite.Sprite("./media/trail.png")
+        self._trail.rotate(direction)
 
 
 class Fregatte_bullet(Bullet):
