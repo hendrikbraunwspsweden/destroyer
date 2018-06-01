@@ -123,7 +123,6 @@ class Destroyer_options(object):
 
         self.__timer = timer
 
-
         #Default timer values
         self.__b_type_timer = -1
         self.__r_time_timer = -1
@@ -990,6 +989,16 @@ class Bullet(object):
 
         self._trail = None
 
+        if 0 < self._direction <= 180:
+            self._shift_direction = 180 + self._direction
+        else:
+            self._shift_direction = 180 - (360-self._direction)
+
+        if self._shift_direction == -180:
+            self._shift_direction *= -1
+
+        print ("Bullet shift direction = {}".format(self._shift_direction))
+
     def move(self):
 
         """
@@ -1007,6 +1016,13 @@ class Bullet(object):
         self._rect = pygame.Rect(self._position[0] - self._image_size[0] / 2, self._position[1] - self._image_size[1] / 2,
                                   self._image_size[0], self._image_size[1])
 
+        trail_center = self._trail.get_center()
+        projection = project_point(trail_center[0], trail_center[1], self._shift_direction, vector_delta)
+        print(projection)
+        self._trail.set_center(projection[0], projection[1])
+        print (self._trail.get_center())
+
+
     def get_position(self):
         return [int(floor(self._position[0])), int(floor(self._position[1]))]
 
@@ -1015,6 +1031,11 @@ class Bullet(object):
 
     def get_image(self):
         return self._image, self._rect
+
+    def get_trail(self):
+        if self._trail is not None:
+            return self._trail
+        else: return None
 
     def get_damage(self):
         return self._damage

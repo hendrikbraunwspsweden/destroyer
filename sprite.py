@@ -71,12 +71,10 @@ class Sprite(object):
         self._rect = pygame.Rect(self._x,self._y,self._image.get_rect()[2], self._image.get_rect()[3])
         self.__get_params()
 
-    @property
-    def center(self):
+    def get_center(self):
         return self._image.get_rect().center
 
-    @center.setter
-    def center(self, x,y):
+    def set_center(self, x,y):
         self._rect = self._image.get_rect(center=(x,y))
         self.__get_params()
 
