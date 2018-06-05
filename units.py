@@ -463,8 +463,6 @@ class Enemy(object):
         self._gun_time_delta = 0
         self._gun_pattern_pos = 0
 
-        self._trail = None
-
     def get_extent(self):
         return pygame.Rect(self._position[0], self._position[1], self._position[0] + self._rect[2], self._position[1] + \
                self._rect[3])
@@ -958,7 +956,9 @@ class Bullet(object):
     _param_dict = {
         "speed":None,
         "damage":None,
-        "is_friendly":None
+        "is_friendly":None,
+        "has_trail":None,
+        "trail_type":None
     }
 
     def __init__(self, timer, origin, direction):
@@ -986,8 +986,9 @@ class Bullet(object):
         self._is_friendly = None
         self._speed = None
         self._damage = None
-
         self._trail = None
+
+        print("Direction: {}".format(self._direction))
 
         if 0 < self._direction <= 180:
             self._shift_direction = 180 + self._direction
@@ -1016,11 +1017,11 @@ class Bullet(object):
         self._rect = pygame.Rect(self._position[0] - self._image_size[0] / 2, self._position[1] - self._image_size[1] / 2,
                                   self._image_size[0], self._image_size[1])
 
-        trail_center = self._trail.get_center()
-        projection = project_point(trail_center[0], trail_center[1], self._shift_direction, vector_delta)
-        print(projection)
-        self._trail.set_center(projection[0], projection[1])
-        print (self._trail.get_center())
+        if self._param_dict["has_trail"]:
+            trail_center = self._trail.get_center()
+            projection = project_point(trail_center[0], trail_center[1], self._direction, vector_delta)
+            self._trail.set_center(projection[0], projection[1])
+            print self._trail.get_center()
 
 
     def get_position(self):
@@ -1047,7 +1048,9 @@ class Destroyer_bullet_1(Bullet):
     _param_dict = {
         "speed":800,
         "damage":100,
-        "is_friendly":True
+        "is_friendly":True,
+        "has_trail":True,
+        "trail_type":0
     }
 
     def __init__(self, timer, origin, direction):
@@ -1067,13 +1070,16 @@ class Destroyer_bullet_1(Bullet):
 
         self._trail = sprite.Sprite("./media/trail.png")
         self._trail.rotate(direction)
+        self._trail.set_center(origin[0], origin[1])
 
 
 class Fregatte_bullet(Bullet):
     _param_dict = {
         "speed":600,
         "damage":10,
-        "is_friendly":False
+        "is_friendly":False,
+        "has_trail":False,
+        "trail_type":None
     }
 
     def __init__(self, timer, origin, direction):
@@ -1095,7 +1101,9 @@ class Standard_enemy_bullet(Bullet):
     _param_dict = {
         "speed":800,
         "damage":10,
-        "is_friendly":False
+        "is_friendly":False,
+        "has_trail":False,
+        "trail_type":None
     }
 
     def __init__(self, timer,origin, direction):
@@ -1117,7 +1125,9 @@ class Mine(Bullet):
     _param_dict = {
         "speed":1,
         "damage":500,
-        "is_friendly":True
+        "is_friendly":True,
+        "has_trail":False,
+        "trail_type":None
     }
 
     def __init__(self, timer,origin, direction):

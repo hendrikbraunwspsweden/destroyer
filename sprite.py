@@ -72,10 +72,10 @@ class Sprite(object):
         self.__get_params()
 
     def get_center(self):
-        return self._image.get_rect().center
+        return self._rect.center
 
     def set_center(self, x,y):
-        self._rect = self._image.get_rect(center=(x,y))
+        self._rect.center = (x,y)
         self.__get_params()
 
     @classmethod
