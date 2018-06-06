@@ -362,6 +362,9 @@ class Destroyer_gfx(object):
 
         for b in self.__bullets.get_bullets():
             self.__screen.blit(b.get_image()[0], b.get_image()[1])
+            trail = b.get_trail()
+            if trail is not None:
+                self.__fades.add_fade(trail.get_image(), trail.get_rect(), 0.4)
 
         for c in self.__crates.get_crates():
             self.__screen.blit(c.get_image()[0], c.get_image()[1])

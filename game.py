@@ -25,6 +25,10 @@ from time import sleep
 import datetime
 
 class Timer(object):
+    """This class is used as a time tracker for the game. Each cykle through the main loop the time difference is
+    measure. The object is then passed into different game objects that require time deltas and their calculations are
+    based on the time delta received from the Timer game instance.
+    """
     def __init__(self):
         self.__old_time = None
         self.__new_time = None
@@ -215,7 +219,9 @@ class Destroyer_game(object):
             if keys[pygame.K_SPACE]:
                 if destroyer.shoot():
                     fades.add_fade(destroyer.get_flash()[0], destroyer.get_flash()[1], 0.15)
-                    bullets.add_bullet(Destroyer_bullet_1(timer, self.__center, destroyer.get_direction()))
+                    bullet_pos = project_point(self.__center[0], self.__center[1], destroyer.get_direction(),
+                                               destroyer.get_tower_height()+3)
+                    bullets.add_bullet(Destroyer_bullet_1(timer, bullet_pos, destroyer.get_direction()))
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT: sys.exit()

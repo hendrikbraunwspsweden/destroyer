@@ -30,7 +30,7 @@ class Enemies():
     """
 
     __ship_ratios_per_level = {
-        0:[(1,30), (30,40), (40,100), (100,101)],
+        0:[(1,30), (30,40), (40,90), (90,101)],
         1:[(1,30), (30,40), (40,100), (100,101)],
         2:[(1,30), (30,45), (45,100), (100,101)],
         3:[(0,1), (1,45), (45,100), (100,101)],
@@ -259,8 +259,11 @@ class Enemies():
                     self.__bullets.add_bullet(Standard_enemy_bullet(self.__timer, e.get_center_point(), bearing))
 
                 elif e.get_gun_type() == 1:
-                    bearing = get_bearing(e.get_center_point(), (self.__window_size[0]/2, self.__window_size[1]/2))[0]
-                    self.__bullets.add_bullet(Fregatte_bullet(self.__timer, e.get_center_point(), bearing))
+                    try:
+                        bearing = get_bearing(e.get_center_point(), (self.__window_size[0]/2, self.__window_size[1]/2))[0]
+                        self.__bullets.add_bullet(Fregatte_bullet(self.__timer, e.get_center_point(), bearing))
+                    except:
+                        pass
 
 
     def get_enemies(self):

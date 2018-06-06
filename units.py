@@ -253,6 +253,7 @@ class Destroyer(object):
         self.__shooting_power = 100
         self.__last_shooting_power_check = datetime.datetime.now()
         self.__options = options
+        self.__tower_height = None
 
         if type == 0:
             self.__pipe_length = 30
@@ -266,6 +267,7 @@ class Destroyer(object):
                                       self.__image_size[0], self.__image_size[1])
 
             self.__tower_image_orig = pygame.image.load("./media/tower.png")
+            self.__tower_height = self.__tower_image_orig.get_rect().height
             self.__center = (window_size[0]/2, window_size[1]/2)
             self.__tower_image = pygame.transform.rotate(self.__tower_image_orig, self.__tower_direction)
             self.__tower_rect = self.__tower_image.get_rect(center=self.__center)
@@ -301,6 +303,9 @@ class Destroyer(object):
 
     def get_tower(self):
         return self.__tower_image, self.__tower_rect
+
+    def get_tower_height(self):
+        return self.__tower_height
 
     def shoot(self, held_in=True):
         if self.__shooting_power < 20:
@@ -986,9 +991,11 @@ class Bullet(object):
         self._is_friendly = None
         self._speed = None
         self._damage = None
+        self._trail_image = None
         self._trail = None
+        self._original_size_x = None
+        self._original_size_y = None
 
-        print("Direction: {}".format(self._direction))
 
         if 0 < self._direction <= 180:
             self._shift_direction = 180 + self._direction
@@ -998,7 +1005,6 @@ class Bullet(object):
         if self._shift_direction == -180:
             self._shift_direction *= -1
 
-        print ("Bullet shift direction = {}".format(self._shift_direction))
 
     def move(self):
 
@@ -1018,11 +1024,13 @@ class Bullet(object):
                                   self._image_size[0], self._image_size[1])
 
         if self._param_dict["has_trail"]:
-            trail_center = self._trail.get_center()
-            projection = project_point(trail_center[0], trail_center[1], self._direction, vector_delta)
-            self._trail.set_center(projection[0], projection[1])
-            print self._trail.get_center()
+            self._trail = sprite.Sprite(self._trail_image.extract_by_height(vector_delta +2 ))
 
+            #Projekt the center of the trail sprite so it is right behind the rocket
+            new_center = project_point(self._rect.center[0], self._rect.center[1], self._shift_direction,
+                                       floor(self._original_size_y/2) + floor(vector_delta/2))
+            self._trail.rotate(self._direction)
+            self._trail.set_center(new_center[0], new_center[1])
 
     def get_position(self):
         return [int(floor(self._position[0])), int(floor(self._position[1]))]
@@ -1044,6 +1052,7 @@ class Bullet(object):
     def is_friendly(self):
         return self._is_friendly
 
+
 class Destroyer_bullet_1(Bullet):
     _param_dict = {
         "speed":800,
@@ -1056,6 +1065,8 @@ class Destroyer_bullet_1(Bullet):
     def __init__(self, timer, origin, direction):
         Bullet.__init__(self, timer, origin, direction)
         self._image = pygame.image.load("./media/missile1.png")
+        self._original_size_x = self._image.get_rect().width
+        self._original_size_y = self._image.get_rect().height
 
         self._is_friendly = self._param_dict["is_friendly"]
         self._damage = self._param_dict["damage"]
@@ -1068,23 +1079,22 @@ class Destroyer_bullet_1(Bullet):
         self._rect = pygame.Rect(self._position[0] - self._image_size[0] / 2, self._position[1] - self._image_size[1] / 2,
                                   self._image_size[0], self._image_size[1])
 
-        self._trail = sprite.Sprite("./media/trail.png")
-        self._trail.rotate(direction)
-        self._trail.set_center(origin[0], origin[1])
-
+        self._trail_image = sprite.Sprite("./media/trail.png")
 
 class Fregatte_bullet(Bullet):
     _param_dict = {
         "speed":600,
         "damage":10,
         "is_friendly":False,
-        "has_trail":False,
-        "trail_type":None
+        "has_trail":True,
+        "trail_type":0
     }
 
     def __init__(self, timer, origin, direction):
         Bullet.__init__(self, timer, origin, direction)
         self._image = pygame.image.load("./media/missile2.png")
+        self._original_size_x = self._image.get_rect().width
+        self._original_size_y = self._image.get_rect().height
 
         self._is_friendly = self._param_dict["is_friendly"]
         self._damage = self._param_dict["damage"]
@@ -1096,6 +1106,8 @@ class Fregatte_bullet(Bullet):
 
         self._rect = pygame.Rect(self._position[0] - self._image_size[0] / 2, self._position[1] - self._image_size[1] / 2,
                                  self._image_size[0], self._image_size[1])
+
+        self._trail_image = sprite.Sprite("./media/trail.png")
 
 class Standard_enemy_bullet(Bullet):
     _param_dict = {

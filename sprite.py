@@ -1,5 +1,6 @@
 import pygame
 from gfx import blit_alpha
+import units
 
 class Sprite(object):
 
@@ -77,6 +78,22 @@ class Sprite(object):
     def set_center(self, x,y):
         self._rect.center = (x,y)
         self.__get_params()
+
+    def project(self, bearing, distance):
+        new_center = units.project_point(self._rect.center[0], self._rect.center[1], bearing, distance)
+        self.set_center(new_center[0], new_center[1])
+
+    def extract_by_width(self, width):
+        try:
+            return self._image.subsurface(self._x,self._y,width,self._y_size)
+        except:
+            return self._image
+
+    def extract_by_height(self, height):
+        try:
+            return self._image.subsurface(self._x,self._y,self._x_size,height)
+        except:
+            return self._image
 
     @classmethod
     def from_text(cls, text, x=0,y=0, font_name="Arial", font_size=20, color=(255,255,255)):
