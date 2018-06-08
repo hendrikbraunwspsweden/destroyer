@@ -89,9 +89,9 @@ class Fades(object):
 
     def fade(self):
         new_fades = []
-        for i in range(len(self.__fade_list)):
-            if not self.__fade_list[i].fade(self.__timer.get_delta()) == -1:
-                new_fades.append(self.__fade_list[i])
+        for i,v in enumerate(self.__fade_list):
+            if not v.fade(self.__timer.get_delta()) == -1:
+                new_fades.append(v)
         self.__fade_list = new_fades
 
     def get_fades(self):
@@ -167,9 +167,9 @@ class Texts(object):
 
     def move(self):
         new_texts = []
-        for i in range(len(self.__text_list)):
-            if not self.__text_list[i].move(self.__timer.get_delta()) == -1:
-                new_texts.append(self.__text_list[i])
+        for i,v in enumerate(self.__text_list):
+            if not v.move(self.__timer.get_delta()) == -1:
+                new_texts.append(v)
         self.__text_list = new_texts
 
     def get_texts(self):

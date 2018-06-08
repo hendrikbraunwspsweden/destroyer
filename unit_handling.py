@@ -30,7 +30,7 @@ class Enemies():
     """
 
     __ship_ratios_per_level = {
-        0:[(1,30), (30,40), (40,90), (90,101)],
+        0:[(1,30), (30,70), (70,100), (100,101)],
         1:[(1,30), (30,40), (40,100), (100,101)],
         2:[(1,30), (30,45), (45,100), (100,101)],
         3:[(0,1), (1,45), (45,100), (100,101)],
@@ -280,9 +280,9 @@ class Enemies():
 
         if len(indices) > 0:
             new_list = []
-            for e in range(len(self.__enemy_list)):
+            for e,v in enumerate(self.__enemy_list):
                 if not e in indices:
-                    new_list.append(self.__enemy_list[e])
+                    new_list.append(v)
             self.__enemy_list = new_list
 
     def set_max_enemies(self, count):
@@ -321,9 +321,9 @@ class Torpedos(object):
     def remove_torpedos(self, indices):
         if len(indices) > 0:
             new_list = []
-            for e in range(len(self.__torpedo_list)):
+            for e,v in enumerate(self.__torpedo_list):
                 if not e in indices:
-                    new_list.append(self.__torpedo_list[e])
+                    new_list.append(v)
             self.__torpedo_list = new_list
 
     def count(self):
@@ -356,9 +356,9 @@ class Bullets(object):
     def remove_bullets(self, indices):
         if len(indices)>0:
             new_list = []
-            for b in range(len(self.__bullet_list)):
+            for b,v in enumerate(self.__bullet_list):
                 if not b in indices:
-                    new_list.append(self.__bullet_list[b])
+                    new_list.append(v)
             self.__bullet_list = new_list
 
 
@@ -478,16 +478,15 @@ class Crates(object):
     def remove_crates(self, indices):
         if len(indices)>0:
             new_list = []
-            for b in range(len(self._crates_list)):
+            for b,v in enumerate(self._crates_list):
                 if not b in indices:
-                    new_list.append(self._crates_list[b])
+                    new_list.append(v)
             self._crates_list = new_list
 
     def check(self):
         remove_list = []
-        for c in range(len(self._crates_list)):
-            if self._crates_list[c].get_age() > self._timeout:
-                print("Timed out after {} seconds".format(self._crates_list[c].get_age()))
+        for c,v in enumerate(self._crates_list):
+            if v.get_age() > self._timeout:
                 remove_list.append(c)
         self.remove_crates(remove_list)
 
