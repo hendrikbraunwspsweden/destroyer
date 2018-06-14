@@ -1150,7 +1150,7 @@ class Mine(Bullet):
         self._is_friendly = self._param_dict["is_friendly"]
         self._direction = randrange(0,359,1)
 
-        self._image = pygame.transform.rotate(self._image, - self._direction)
+        #self._image = pygame.transform.rotate(self._image, - self._direction)
         rect = self._image.get_rect()
         self._image_size = rect[2], rect[3]
 

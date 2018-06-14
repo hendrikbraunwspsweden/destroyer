@@ -365,7 +365,7 @@ class Bullets(object):
 class Crates(object):
     """Repair, Armor, Life, Bomb, Mine, Machine gun"""
 
-    __crate_ratios = [(1,30), (30,40), (40,50), (50,60), (60,80), (80,100)]
+    __crate_ratios = [(1,20), (20,30), (30,35), (35,60), (60,80), (80,100)]
 
     __wait_range_per_level = {
         0:(20,25),

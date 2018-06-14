@@ -276,12 +276,15 @@ class Destroyer_logic(object):
                         if _crate.get_type() == 4:
                             x = _crate.get_position()[0]
                             y = _crate.get_position()[1]
-                            self.__bullets.add_bullet(Mine(self.__timer,(x, y-30), 0))
-                            self.__bullets.add_bullet(Mine(self.__timer,(x+30, y), 0))
-                            self.__bullets.add_bullet(Mine(self.__timer,(x, y+30), 0))
-                            self.__bullets.add_bullet(Mine(self.__timer,(x-30, y), 0))
+
+                            self.__bullets.add_bullet(Mine(self.__timer,(x, y-40), 0))
+                            self.__bullets.add_bullet(Mine(self.__timer,(x+40, y), 0))
+                            self.__bullets.add_bullet(Mine(self.__timer,(x, y+40), 0))
+                            self.__bullets.add_bullet(Mine(self.__timer,(x-40, y), 0))
+
                             self.__texts.add_text(_bullet.get_position(), "Mines!".
                                                   format(_crate.get_effect_points()))
+                            break
 
                         if _crate.get_type() == 5:
                             self.__destroyer_options.set_reload_time(100,10)
